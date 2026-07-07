@@ -174,6 +174,17 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .badge-card.earned{border-color:var(--accent-dim);box-shadow:0 0 12px var(--glow)}
 .badge-card.locked{opacity:.55}
 .badge-card .icon{font-size:28px;margin-bottom:6px}
+.title-grid,.discovery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+.title-card,.discovery-card{
+  padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.18);
+  text-align:left;cursor:default;
+}
+.title-card.unlocked{border-color:var(--accent-dim);cursor:pointer}
+.title-card.equipped{border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
+.title-card.locked,.discovery-card.locked{opacity:.55}
+.title-card .name,.discovery-card .name{font-weight:800;color:var(--ink);margin-bottom:4px}
+.equipped-title-line{margin:8px 0 0;font-size:14px;color:var(--accent);font-weight:800}
+
 .reward-section{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
 
 
@@ -206,7 +217,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
   <section id="dashboard" class="screen active">
     <div class="card">
       <h2>Command Center</h2>
-      <p>Welcome, <span id="defenderName">Defender</span>. Track your kaiju power, weekly boss threat, and city status.</p>
+      <p>Welcome, <span id="defenderName">Defender</span><span id="equippedTitleDash"></span>. Track your kaiju power, weekly boss threat, and city status.</p>
       <p id="kidFeedback" class="kid-feedback" hidden></p>
       <div id="victoryBanner" class="victory-banner" hidden></div>
       <div class="stat-grid">
@@ -254,6 +265,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
     <div class="card">
       <h2>Kaiju Threat Monitor</h2>
       <p>Your kaiju energy grows as you complete missions. Energy also fuels strikes against the weekly boss.</p>
+      <p class="equipped-title-line" id="equippedTitleKaiju" hidden></p>
       <div class="stat-grid">
         <div class="stat"><span class="label">Growth Stage</span><span class="value" id="kaijuStageKaiju" style="font-size:16px">Hatchling</span></div>
         <div class="stat"><span class="label">Kaiju Energy</span><span class="value" id="kaijuEnergyKaiju">0</span></div>
@@ -285,12 +297,20 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <h3 class="small" style="color:var(--accent);margin-top:14px">Badges</h3>
       <div class="badge-grid" id="badgeGrid"></div>
       <div class="reward-section">
-        <h3 class="small" style="color:var(--muted)">Titles (coming soon)</h3>
-        <p class="small">Earn titles like Harbor Warden or Storm Watcher as you grow. Locked for now.</p>
+        <h3 class="small" style="color:var(--accent)">Title Vault</h3>
+        <p class="small">Tap an unlocked title to wear it on your Dashboard and Kaiju tab.</p>
+        <p class="small">Equipped: <span id="equippedTitleDisplay">None</span></p>
+        <div class="title-grid" id="titleVault"></div>
       </div>
       <div class="reward-section">
-        <h3 class="small" style="color:var(--muted)">Kaiju Discoveries (coming soon)</h3>
-        <p class="small">Rare finds and lore entries will appear here as you progress.</p>
+        <h3 class="small" style="color:var(--muted)">Kaiju Discoveries</h3>
+        <p class="small">Rare creatures to find on future quests. Locked for now.</p>
+        <div class="discovery-grid" id="discoveryGrid"></div>
+      </div>
+      <div class="reward-section">
+        <h3 class="small" style="color:var(--accent)">Reward History</h3>
+        <ul class="log-list" id="rewardLog"></ul>
+        <p class="small" id="rewardLogEmpty">Badges and titles you earn will appear here.</p>
       </div>
     </div>
     <div class="card">
@@ -351,6 +371,10 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
           <button type="button" onclick="startNewBossBattle()">Start new Storm Colossus battle</button>
           <button type="button" onclick="addTestEnergy()">Add test energy (+10)</button>
           <button type="button" onclick="damageBossForTesting()">Damage boss (-20 HP)</button>
+          <button type="button" onclick="unlockAllBadgesForTesting()">Unlock all badges (test)</button>
+          <button type="button" onclick="clearEarnedBadges()">Clear earned badges</button>
+          <button type="button" onclick="unlockAllTitlesForTesting()">Unlock all titles (test)</button>
+          <button type="button" onclick="resetEquippedTitle()">Reset selected title</button>
           <button type="button" class="warn" onclick="resetAllProgress()">Reset all progress</button>
         </div>
         <button type="button" class="parent-lock" onclick="lockParentControls()">Lock Parent Controls</button>
@@ -363,9 +387,9 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 <footer>Kaiju Quest: City Defender — local save only</footer>
 
 <script>
-/* Kaiju Quest: City Defender — Phase 5 daily missions */
+/* Kaiju Quest: City Defender — Phase 6 rewards */
 
-const APP_BUILD = "kq-phase5-missions-v1";
+const APP_BUILD = "kq-phase6-rewards-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
@@ -412,8 +436,28 @@ const MISSION_DISTRICT = {
 const DISTRICT_GAIN_PER_MISSION = 8;
 const MISSION_LOG_MAX = 25;
 const BADGE_DEFS = [
-  { id: "first_defender", name: "First Defender", icon: "🛡️", desc: "Complete your first mission." }
+  { id: "first_defender", name: "First Defender", icon: "🛡️", desc: "Complete your first mission." },
+  { id: "daily_defender", name: "Daily Defender", icon: "⭐", desc: "Complete all daily missions once." },
+  { id: "storm_breaker", name: "Storm Breaker", icon: "⚡", desc: "Defeat Storm Colossus once." },
+  { id: "city_builder", name: "City Builder", icon: "🏗️", desc: "Get any city district to 100% protection." },
+  { id: "rising_titan", name: "Rising Titan", icon: "🌟", desc: "Reach Young Kaiju stage." }
 ];
+
+const TITLE_DEFS = [
+  { id: "little_guardian", name: "Little Guardian", desc: "Complete your first mission.", minEnergy: 0, needsMission: true },
+  { id: "shield_roarer", name: "Shield Roarer", desc: "Reach Young Kaiju stage.", minEnergy: 15 },
+  { id: "city_protector", name: "City Protector", desc: "Reach City Guardian stage.", minEnergy: 35 },
+  { id: "storm_tamer", name: "Storm Tamer", desc: "Defeat Storm Colossus once.", needsBossWin: true }
+];
+
+const DISCOVERY_DEFS = [
+  { id: "emberback", name: "Emberback", desc: "A warm-scaled wanderer. Coming soon." },
+  { id: "tidehorn", name: "Tidehorn", desc: "A horned guardian of the deep harbor. Coming soon." },
+  { id: "skyclaw", name: "Skyclaw", desc: "A swift shadow above the skyline. Coming soon." },
+  { id: "stonehide", name: "Stonehide", desc: "A patient colossus of the old district. Coming soon." }
+];
+
+const REWARD_LOG_MAX = 30;
 
 const PARENT_UNLOCK_KEY = "kq_parent_unlocked_until";
 const PARENT_SESSION_MS = 5 * 60 * 1000;
@@ -552,6 +596,9 @@ function defaultState() {
     boss: { name: BOSS_NAME, maxHp: BOSS_MAX_HP, currentHp: BOSS_MAX_HP, defeated: false },
     districts: defaultDistricts(),
     badges: [],
+    unlockedTitles: [],
+    equippedTitleId: null,
+    rewardLog: [],
     victoryLog: [],
     missions: STARTER_MISSIONS.map((m) => ({ ...m, completedToday: false })),
     missionLog: [],
@@ -584,7 +631,18 @@ function normalizeState(raw) {
     .filter(Boolean)
     .slice(0, MISSION_LOG_MAX);
   merged.kidFeedback = typeof raw.kidFeedback === "string" ? raw.kidFeedback : "";
-  merged.badges = Array.isArray(raw.badges) ? raw.badges : [];
+  merged.badges = (Array.isArray(raw.badges) ? raw.badges : []).map((b) => {
+    const def = BADGE_DEFS.find((d) => d.id === b.id);
+    return {
+      id: b.id,
+      name: b.name || (def && def.name) || b.id,
+      description: b.description || (def && def.desc) || "",
+      earnedAt: b.earnedAt || Date.now()
+    };
+  });
+  merged.unlockedTitles = Array.isArray(raw.unlockedTitles) ? raw.unlockedTitles : [];
+  merged.equippedTitleId = raw.equippedTitleId || null;
+  merged.rewardLog = Array.isArray(raw.rewardLog) ? raw.rewardLog.slice(0, REWARD_LOG_MAX) : [];
   merged.victoryLog = Array.isArray(raw.victoryLog) ? raw.victoryLog : [];
   merged.districts = defaultDistricts().map((def) => {
     const saved = Array.isArray(raw.districts) ? raw.districts.find((d) => d.id === def.id) : null;
@@ -752,11 +810,96 @@ function hasBadge(id) {
   return state.badges.some((b) => b.id === id);
 }
 
+function getBadge(id) {
+  return state.badges.find((b) => b.id === id);
+}
+
+function hasTitle(id) {
+  return state.unlockedTitles.includes(id);
+}
+
+function logReward(type, id, name) {
+  state.rewardLog.unshift({ type: type, id: id, name: name, at: Date.now() });
+  if (state.rewardLog.length > REWARD_LOG_MAX) state.rewardLog.length = REWARD_LOG_MAX;
+}
+
 function awardBadge(id) {
-  if (hasBadge(id)) return;
+  if (hasBadge(id)) return false;
   const def = BADGE_DEFS.find((b) => b.id === id);
-  if (!def) return;
-  state.badges.push({ id: def.id, name: def.name, earnedAt: Date.now() });
+  if (!def) return false;
+  state.badges.push({
+    id: def.id,
+    name: def.name,
+    description: def.desc,
+    earnedAt: Date.now()
+  });
+  logReward("badge", def.id, def.name);
+  return true;
+}
+
+function unlockTitle(id) {
+  if (hasTitle(id)) return false;
+  const def = TITLE_DEFS.find((t) => t.id === id);
+  if (!def) return false;
+  state.unlockedTitles.push(id);
+  logReward("title", def.id, def.name);
+  return true;
+}
+
+function checkTitleUnlocks() {
+  TITLE_DEFS.forEach((t) => {
+    if (t.needsMission && state.missionLog.length < 1) return;
+    if (t.minEnergy != null && state.kaijuEnergy < t.minEnergy) return;
+    if (t.needsBossWin && !(state.boss.defeated || state.victoryLog.length > 0)) return;
+    unlockTitle(t.id);
+  });
+}
+
+function checkAllBadges() {
+  if (state.missionLog.length >= 1) awardBadge("first_defender");
+  if (state.missions.length > 0 && state.missions.every((m) => m.completedToday)) {
+    awardBadge("daily_defender");
+  }
+  if (state.boss.defeated || state.victoryLog.length > 0) awardBadge("storm_breaker");
+  if (state.missionLog.length >= 1 && state.districts.some((d) => d.protection >= 100)) awardBadge("city_builder");
+  if (state.kaijuEnergy >= 15) awardBadge("rising_titan");
+  checkTitleUnlocks();
+}
+
+function equipTitle(id) {
+  if (!hasTitle(id)) return;
+  state.equippedTitleId = id;
+  save();
+}
+
+function resetEquippedTitle() {
+  if (!requireParentUnlocked()) return;
+  state.equippedTitleId = null;
+  save();
+  showParentMsg("Equipped title cleared.", false);
+}
+
+function unlockAllBadgesForTesting() {
+  if (!requireParentUnlocked()) return;
+  BADGE_DEFS.forEach((b) => awardBadge(b.id));
+  save();
+  showParentMsg("All badges unlocked for testing.", false);
+}
+
+function clearEarnedBadges() {
+  if (!requireParentUnlocked()) return;
+  if (!confirm("Clear all earned badges?")) return;
+  state.badges = [];
+  state.rewardLog = state.rewardLog.filter((r) => r.type !== "badge");
+  save();
+  showParentMsg("Earned badges cleared.", false);
+}
+
+function unlockAllTitlesForTesting() {
+  if (!requireParentUnlocked()) return;
+  TITLE_DEFS.forEach((t) => unlockTitle(t.id));
+  save();
+  showParentMsg("All titles unlocked for testing.", false);
 }
 
 function applyDistrictGain(missionId) {
@@ -764,14 +907,17 @@ function applyDistrictGain(missionId) {
   if (!districtId) return districtNameForMission(missionId);
   const district = state.districts.find((d) => d.id === districtId);
   if (!district) return districtNameForMission(missionId);
+  const before = district.protection;
   district.protection = Math.min(100, district.protection + DISTRICT_GAIN_PER_MISSION);
+  if (before < 100 && district.protection >= 100) awardBadge("city_builder");
   return district.name;
 }
 
-function recalcCityIntegrity() {
-  if (!state.districts.length) return;
-  const avg = state.districts.reduce((sum, d) => sum + d.protection, 0) / state.districts.length;
-  state.cityIntegrity = Math.round(avg);
+function recalcCityIntegrity(s) {
+  const target = s || state;
+  if (!target.districts.length) return;
+  const avg = target.districts.reduce((sum, d) => sum + d.protection, 0) / target.districts.length;
+  target.cityIntegrity = Math.round(avg);
 }
 
 function handleBossDefeat() {
@@ -784,6 +930,7 @@ function handleBossDefeat() {
     dateKey: state.todayKey
   });
   if (state.victoryLog.length > 20) state.victoryLog.length = 20;
+  checkAllBadges();
 }
 
 function startNewBossBattle() {
@@ -821,10 +968,10 @@ function completeMission(missionId) {
   }));
   if (state.missionLog.length > MISSION_LOG_MAX) state.missionLog.length = MISSION_LOG_MAX;
 
-  if (!hasBadge("first_defender")) awardBadge("first_defender");
   setKidFeedback(buildKidFeedback(districtName));
   recalcKaijuLevel(state);
   handleBossDefeat();
+  checkAllBadges();
   save();
 }
 
@@ -865,6 +1012,7 @@ function addTestEnergy() {
   if (!requireParentUnlocked()) return;
   state.kaijuEnergy += TEST_ENERGY_BUMP;
   recalcKaijuLevel(state);
+  checkAllBadges();
   save();
   showParentMsg("Added " + TEST_ENERGY_BUMP + " test energy.", false);
 }
@@ -977,14 +1125,73 @@ function renderDistricts() {
 function renderBadges() {
   const grid = document.getElementById("badgeGrid");
   if (!grid) return;
-  const all = BADGE_DEFS;
-  grid.innerHTML = all.map((def) => {
-    const earned = hasBadge(def.id);
+  grid.innerHTML = BADGE_DEFS.map((def) => {
+    const earned = getBadge(def.id);
+    const status = earned
+      ? "Earned " + formatLogTime(earned.earnedAt)
+      : def.desc;
     return '<div class="badge-card ' + (earned ? "earned" : "locked") + '">' +
       '<div class="icon">' + def.icon + '</div>' +
       '<div class="title">' + escapeHtml(def.name) + '</div>' +
-      '<div class="small">' + escapeHtml(earned ? "Earned!" : def.desc) + '</div></div>';
+      '<div class="small">' + escapeHtml(status) + '</div></div>';
   }).join("");
+}
+
+function renderTitles() {
+  const vault = document.getElementById("titleVault");
+  const display = document.getElementById("equippedTitleDisplay");
+  const dash = document.getElementById("equippedTitleDash");
+  const kaiju = document.getElementById("equippedTitleKaiju");
+  const equipped = TITLE_DEFS.find((t) => t.id === state.equippedTitleId);
+  const equippedLabel = equipped ? equipped.name : "None";
+  if (display) display.textContent = equippedLabel;
+  if (dash) {
+    dash.textContent = equipped ? " — " + equipped.name : "";
+  }
+  if (kaiju) {
+    if (equipped) {
+      kaiju.hidden = false;
+      kaiju.textContent = "Wearing title: " + equipped.name;
+    } else {
+      kaiju.hidden = true;
+      kaiju.textContent = "";
+    }
+  }
+  if (!vault) return;
+  vault.innerHTML = TITLE_DEFS.map((t) => {
+    const unlocked = hasTitle(t.id);
+    const isEquipped = state.equippedTitleId === t.id;
+    const cls = "title-card " + (isEquipped ? "equipped" : unlocked ? "unlocked" : "locked");
+    const click = unlocked ? " onclick=\"equipTitle('" + t.id + "')\"" : "";
+    return "<div class=\"" + cls + "\"" + click + ">" +
+      "<div class=\"name\">" + escapeHtml(t.name) + "</div>" +
+      "<div class=\"small\">" + escapeHtml(unlocked ? (isEquipped ? "Equipped - tap to keep" : "Tap to equip") : t.desc) + "</div></div>";
+  }).join("");
+}
+
+function renderDiscoveries() {
+  const grid = document.getElementById("discoveryGrid");
+  if (!grid) return;
+  grid.innerHTML = DISCOVERY_DEFS.map((d) =>
+    '<div class="discovery-card locked">' +
+    '<div class="name">' + escapeHtml(d.name) + '</div>' +
+    '<div class="small">' + escapeHtml(d.desc) + '</div></div>'
+  ).join("");
+}
+
+function renderRewardLog() {
+  const list = document.getElementById("rewardLog");
+  const empty = document.getElementById("rewardLogEmpty");
+  if (!list) return;
+  if (!state.rewardLog.length) {
+    list.innerHTML = "";
+    if (empty) empty.style.display = "block";
+    return;
+  }
+  if (empty) empty.style.display = "none";
+  list.innerHTML = state.rewardLog.map((r) =>
+    '<li><b>' + escapeHtml(r.name) + '</b> (' + escapeHtml(r.type) + ") — " + escapeHtml(formatLogTime(r.at)) + "</li>"
+  ).join("");
 }
 
 function renderVictoryLog() {
@@ -1030,6 +1237,9 @@ function render() {
   renderBossHp();
   renderDistricts();
   renderBadges();
+  renderTitles();
+  renderDiscoveries();
+  renderRewardLog();
   renderVictoryLog();
   renderMissionList();
   renderMissionLogs();
@@ -1096,6 +1306,7 @@ async function initFirebase() {
 }
 
 initFirebase();
+checkAllBadges();
 save();
 </script>
 </body>
