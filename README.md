@@ -2,7 +2,7 @@
 
 A family quest dashboard for tracking missions, city restoration, kaiju threats, and rewards — built in the same static style as Hero's Journey.
 
-**Current:** Runnable quest dashboard with missions, progression, rewards, and monster image slots (local storage only). Firebase sync comes later.
+**Current:** Runnable Godzilla quest dashboard with missions, progression, rewards, and real kaiju image slots (local storage only). Firebase sync comes later.
 
 ## Stack
 
@@ -36,11 +36,12 @@ Then visit: http://localhost:8080/index.html
 ├── index.html              # Main app
 ├── manifest.webmanifest    # PWA manifest (icons TBD)
 ├── assets/
-│   ├── hero/               # Player kaiju images
-│   ├── enemies/            # Boss / rival kaiju images
+│   ├── hero/               # Godzilla player images
+│   ├── enemies/            # Enemy kaiju images
 │   ├── city/               # City skyline / battle backgrounds
-│   ├── badges/             # Badge icon images
-│   └── ui/                 # Small UI icons (shields, markers)
+│   ├── badges/             # Badge / trophy images
+│   ├── ui/                 # Small UI icons
+│   └── roster/             # Kaiju roster reference image
 ├── backups/                # Local progress snapshots (gitignored)
 ├── scripts/
 │   ├── check-syntax.py     # Verify inline JS parses
@@ -60,21 +61,78 @@ python scripts/smoke-test.py   # pip install playwright && playwright install ch
 Do **not** reuse Hero's Journey Firebase keys, `localStorage` keys, collections, or documents. Create a new Firebase project for Kaiju Quest when ready.
 
 
-## Monster images (Phase 7)
+## Kaiju images (manual assets)
 
-The app reads image paths from the `IMAGE_MAP` object in `index.html`. Drop PNG files into the folders below using these default filenames (or change the paths in `IMAGE_MAP`):
+This is a **private family app**. You provide real Godzilla/kaiju PNG files manually. Paths are configured in `PLAYER_CONFIG`, `ENEMY_KAIJU_DEFS`, and `IMAGE_MAP` inside `index.html`.
 
-| Purpose | Folder | Default file |
-|---------|--------|--------------|
-| Player kaiju | `assets/hero/` | `godzilla-main.png` |
-| Current boss | `assets/enemies/` | `storm-colossus.png` |
-| City / battle background | `assets/city/` | `city-skyline.png` |
-| Badge icons | `assets/badges/` | `first-defender.png`, `daily-defender.png`, `storm-breaker.png`, `city-builder.png`, `rising-titan.png` |
-| UI icons | `assets/ui/` | `shield-icon.png` (district markers) |
+### Folders
 
-**Missing images:** The app still runs without image files. Each image slot shows a dashed placeholder box with a text label until the file loads. Broken or missing files never crash the UI.
+| Folder | Purpose |
+|--------|---------|
+| `assets/hero/` | Godzilla (player) images |
+| `assets/enemies/` | Enemy kaiju battle images |
+| `assets/city/` | City skyline and battle backgrounds |
+| `assets/badges/` | Badge/trophy icons |
+| `assets/ui/` | Small UI icons (district markers) |
+| `assets/roster/` | Reference roster image for your son |
 
-**Tips:** Use transparent PNGs for kaiju art. Keep hero/boss images roughly square. City images work well as wide banners.
+### Hero (Godzilla)
+
+| File | Use |
+|------|-----|
+| `assets/hero/godzilla-main.png` | Default Godzilla |
+| `assets/hero/godzilla-atomic.png` | Powered-up Godzilla (shows after enough kaiju energy) |
+
+### Enemy kaiju
+
+Place one PNG per kaiju. The app starts with **King Ghidorah** as the active rival; others are configured for later.
+
+| File |
+|------|
+| `assets/enemies/king-ghidorah.png` |
+| `assets/enemies/mechagodzilla.png` |
+| `assets/enemies/rodan.png` |
+| `assets/enemies/mothra.png` |
+| `assets/enemies/gigan.png` |
+| `assets/enemies/destoroyah.png` |
+| `assets/enemies/anguirus.png` |
+| `assets/enemies/biollante.png` |
+| `assets/enemies/spacegodzilla.png` |
+| `assets/enemies/king-caesar.png` |
+| `assets/enemies/hedorah.png` |
+| `assets/enemies/megaguirus.png` |
+
+### City / backgrounds
+
+| File | Use |
+|------|-----|
+| `assets/city/city-battle-bg.png` | Dashboard battle scene background |
+| `assets/city/city-skyline.png` | City tab banner |
+
+### Badges
+
+| File |
+|------|
+| `assets/badges/first-defender.png` |
+| `assets/badges/daily-defender.png` |
+| `assets/badges/storm-breaker.png` |
+| `assets/badges/city-builder.png` |
+| `assets/badges/rising-titan.png` |
+| `assets/badges/kaiju-champion.png` |
+
+### Roster reference
+
+| File | Use |
+|------|-----|
+| `assets/roster/kaiju-roster-reference.png` | Optional kaiju roster reference (Kaiju tab) |
+
+### Missing images
+
+The app **does not** use fake emoji monsters. If a file is missing, each slot shows:
+
+`Add image: assets/.../filename.png`
+
+Drop in the PNG and refresh — the image appears automatically. The app keeps working without images.
 
 ## Copyright note
 

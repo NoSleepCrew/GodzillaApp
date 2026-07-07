@@ -228,9 +228,12 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 }
 .img-slot img.img-broken{display:none}
 .img-placeholder{
-  padding:10px;font-size:12px;font-weight:800;color:var(--muted);line-height:1.3;z-index:0;
+  padding:10px;font-size:12px;font-weight:800;color:var(--muted);line-height:1.35;z-index:1;
+  word-break:break-word;
 }
-.img-slot.has-image .img-placeholder{opacity:.25;font-size:10px}
+.img-slot.has-image .img-placeholder{display:none}
+.img-slot img.img-broken{display:none}
+.img-slot img.img-broken~.img-placeholder{display:flex}
 .hero-profile{
   display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:start;margin:12px 0;
 }
@@ -245,6 +248,7 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .badge-card .badge-art{margin-bottom:8px}
 .badge-card .badge-art .img-slot{min-height:72px}
 .power-card .power-art{margin-bottom:8px}
+.power-card .power-icon{font-size:32px;line-height:1;margin-bottom:8px;text-align:center}
 .power-card .power-art .img-slot{min-height:64px}
 @media (max-width:640px){
   .hero-profile{grid-template-columns:1fr}
@@ -276,10 +280,8 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .monster-card.enemy-card{border-color:rgba(255,92,92,.45);background:linear-gradient(180deg,rgba(255,92,92,.12),rgba(0,0,0,.45))}
 .monster-card .img-slot{border:none;background:transparent;min-height:120px;width:100%}
 .monster-card .img-slot.tall{min-height:120px}
-.monster-card .monster-emoji{font-size:56px;line-height:1;margin-bottom:6px}
-.monster-card .monster-title{font-size:14px;font-weight:900;letter-spacing:.06em;color:var(--ink);padding:0 8px 10px;text-align:center}
-.monster-card .img-placeholder{font-size:11px}
-.monster-card.has-image .monster-emoji,.monster-card.has-image .monster-title{display:none}
+.monster-card .img-placeholder{font-size:11px;font-weight:700;line-height:1.35;padding:14px}
+.monster-card .asset-prompt{color:var(--muted)}
 .vs-pill{font-size:16px;padding:10px 14px;align-self:center;box-shadow:0 0 16px rgba(61,250,163,.2)}
 .boss-battle-panel{
   margin-top:14px;padding:16px;border-radius:16px;border:2px solid rgba(255,92,92,.35);
@@ -355,6 +357,7 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
   border:2px solid rgba(61,250,163,.35);background:linear-gradient(90deg,rgba(61,250,163,.1),rgba(0,0,0,.25))
 }
 .trophy-item .trophy-icon{font-size:32px}
+.trophy-item .trophy-art{flex-shrink:0;width:72px}
 .trophy-item .trophy-text{font-weight:800;color:var(--ink);font-size:15px}
 .trophy-item .trophy-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .victory-banner{font-size:16px}
@@ -400,7 +403,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <p class="battle-tagline">You are GODZILLA! Every mission powers your attacks and blasts enemy kaiju!</p>
       <div class="guardian-name-row">
         <label for="guardianNameDash">Your Kaiju</label>
-        <input type="text" id="guardianNameDash" maxlength="28" placeholder="Guardian Kaiju" onchange="saveGuardianKaijuName(this.value)" onblur="saveGuardianKaijuName(this.value)" />
+        <input type="text" id="guardianNameDash" maxlength="28" placeholder="Godzilla" onchange="saveGuardianKaijuName(this.value)" onblur="saveGuardianKaijuName(this.value)" />
       </div>
       <p class="small">Battle title: <span id="equippedTitleDash">None</span></p>
       <p id="kidFeedback" class="kid-feedback" hidden></p>
@@ -428,7 +431,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
         <div class="battle-card-head">
           <div class="battle-card-art" id="dashboardBossThumb"></div>
           <div>
-            <div class="battle-card-title" id="bossName">Storm Colossus</div>
+            <div class="battle-card-title" id="bossName">King Ghidorah</div>
             <div class="small battle-card-sub" id="bossBattleSub">Enemy Kaiju</div>
           </div>
         </div>
@@ -436,7 +439,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
           <div class="mega-bar-label"><span>💥 Boss HP</span><span class="mega-value" id="bossHpText">100 / 100 HP</span></div>
           <div class="mega-bar boss-mega"><div class="fill" id="bossHpBar" style="width:100%"></div></div>
         </div>
-        <p class="boss-status-line" id="bossStatus">Storm Colossus threatens the city! Launch mission attacks!</p>
+        <p class="boss-status-line" id="bossStatus">King Ghidorah threatens the city! Launch mission attacks!</p>
       </div>
     </div>
     <div class="card">
@@ -471,7 +474,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <p class="battle-tagline">This is your monster! Grow stronger and unlock epic battle powers.</p>
       <div class="guardian-name-row">
         <label for="guardianNameKaiju">Kaiju name</label>
-        <input type="text" id="guardianNameKaiju" maxlength="28" placeholder="Guardian Kaiju" onchange="saveGuardianKaijuName(this.value)" onblur="saveGuardianKaijuName(this.value)" />
+        <input type="text" id="guardianNameKaiju" maxlength="28" placeholder="Godzilla" onchange="saveGuardianKaijuName(this.value)" onblur="saveGuardianKaijuName(this.value)" />
       </div>
       <p class="equipped-title-line" id="equippedTitleKaiju" hidden></p>
       <div class="stat-grid">
@@ -483,7 +486,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <div class="kaiju-hero-showcase" id="kaijuHeroShowcase"></div>
       <div class="hero-profile" id="kaijuProfile">
         <div class="hero-profile-meta" style="grid-column:1/-1">
-          <div class="label">Guardian Kaiju</div>
+          <div class="label">Godzilla</div>
           <div class="value" id="kaijuProfileName">Guardian Kaiju</div>
           <div class="label">Growth Stage</div>
           <div class="value" id="kaijuProfileStage">Hatchling</div>
@@ -493,14 +496,16 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       </div>
       <div class="battle-stats-panel" id="kaijuBattleStats"></div>
       <p class="small" id="kaijuArtLabel">Complete missions to grow into a legendary titan!</p>
-      <h3 class="small" style="color:var(--accent);margin-top:14px">Kaiju Powers</h3>
+      <h3 class="small" style="color:var(--accent);margin-top:14px">Godzilla Powers</h3>
       <div class="power-grid" id="kaijuPowerPreview"></div>
-      <h3 class="small" style="color:var(--accent);margin-top:14px">Rival Kaiju</h3>
+      <h3 class="small" style="color:var(--accent);margin-top:14px">Kaiju Roster Reference</h3>
+      <div id="kaijuRosterRef"></div>
+      <h3 class="small" style="color:var(--accent);margin-top:14px">Current Rival Kaiju</h3>
       <div class="battle-card" id="kaijuBossBattleCard">
         <div class="battle-card-head">
           <div class="battle-card-art" id="kaijuBossThumb"></div>
           <div>
-            <div class="battle-card-title" id="bossNameKaiju">Storm Colossus</div>
+            <div class="battle-card-title" id="bossNameKaiju">King Ghidorah</div>
             <div class="small battle-card-sub" id="bossBattleSubKaiju">Enemy Kaiju</div>
           </div>
         </div>
@@ -550,7 +555,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
         <h3 class="small" style="color:var(--accent)">Defeated Kaiju Trophies</h3>
         <p class="small">Enemy kaiju your GODZILLA has knocked down!</p>
         <ul class="trophy-list" id="victoryLog"></ul>
-        <p class="small" id="victoryLogEmpty">Defeat Storm Colossus to record your first victory.</p>
+        <p class="small" id="victoryLogEmpty">Defeat an enemy kaiju to record your first trophy.</p>
       </div>
     </div>
   </section>
@@ -562,7 +567,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <ul class="small" style="color:var(--muted);line-height:1.6;padding-left:20px">
         <li>Complete daily missions to power up your Guardian Kaiju</li>
         <li>Gain kaiju energy and grow into stronger stages</li>
-        <li>Strike enemy kaiju like Storm Colossus in rival battles</li>
+        <li>Strike enemy kaiju like King Ghidorah, Mechagodzilla, Rodan, and more</li>
         <li>Protect city districts from invading threats</li>
       </ul>
     </div>
@@ -603,7 +608,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
           <button type="button" onclick="clearKidFeedback()">Clear kid feedback message</button>
           <button type="button" onclick="clearMissionLog()">Clear mission log</button>
           <button type="button" onclick="restoreBossHp()">Restore boss HP</button>
-          <button type="button" onclick="startNewBossBattle()">Start new Storm Colossus battle</button>
+          <button type="button" onclick="startNewBossBattle()">Start new kaiju battle</button>
           <button type="button" onclick="addTestEnergy()">Add test energy (+10)</button>
           <button type="button" onclick="damageBossForTesting()">Damage boss (-20 HP)</button>
           <button type="button" onclick="unlockAllBadgesForTesting()">Unlock all badges (test)</button>
@@ -623,18 +628,40 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 <footer>Kaiju Quest: City Defender — local save only</footer>
 
 <script>
-/* Kaiju Quest: City Defender — Phase 7 battle visuals */
+/* Kaiju Quest: City Defender — Phase 8 kaiju assets */
 
-const APP_BUILD = "kq-phase7-battle-visuals-v1";
+const APP_BUILD = "kq-phase8-kaiju-assets-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
-const BOSS_NAME = "Storm Colossus";
 const BOSS_MAX_HP = 100;
+const DEFAULT_ENEMY_ID = "king_ghidorah";
 const ENERGY_PER_MISSION = 5;
 const BOSS_DAMAGE_PER_MISSION = 20;
 const CITY_REPAIR_PER_MISSION = 4;
 const ENERGY_PER_LEVEL = 25;
+const POWERED_IMAGE_MIN_ENERGY = 10;
+
+const PLAYER_CONFIG = {
+  displayName: "Godzilla",
+  mainImage: "assets/hero/godzilla-main.png",
+  poweredImage: "assets/hero/godzilla-atomic.png"
+};
+
+const ENEMY_KAIJU_DEFS = [
+  { id: "king_ghidorah", displayName: "King Ghidorah", maxHp: 100, imagePath: "assets/enemies/king-ghidorah.png", description: "The three-headed dragon king attacks the city.", available: true },
+  { id: "mechagodzilla", displayName: "Mechagodzilla", maxHp: 100, imagePath: "assets/enemies/mechagodzilla.png", description: "A robotic Godzilla built to destroy you.", available: false },
+  { id: "rodan", displayName: "Rodan", maxHp: 100, imagePath: "assets/enemies/rodan.png", description: "The giant pteranodon sweeps in from the sky.", available: false },
+  { id: "mothra", displayName: "Mothra", maxHp: 100, imagePath: "assets/enemies/mothra.png", description: "The guardian moth arrives with blazing power.", available: false },
+  { id: "gigan", displayName: "Gigan", maxHp: 100, imagePath: "assets/enemies/gigan.png", description: "The cyborg beast brings razor-sharp chaos.", available: false },
+  { id: "destoroyah", displayName: "Destoroyah", maxHp: 100, imagePath: "assets/enemies/destoroyah.png", description: "A terrifying creature born from destruction.", available: false },
+  { id: "anguirus", displayName: "Anguirus", maxHp: 100, imagePath: "assets/enemies/anguirus.png", description: "The spiked defender challenges Godzilla.", available: false },
+  { id: "biollante", displayName: "Biollante", maxHp: 100, imagePath: "assets/enemies/biollante.png", description: "A massive plant monster rises from the earth.", available: false },
+  { id: "spacegodzilla", displayName: "SpaceGodzilla", maxHp: 100, imagePath: "assets/enemies/spacegodzilla.png", description: "A cosmic clone brings crystal fury.", available: false },
+  { id: "king_caesar", displayName: "King Caesar", maxHp: 100, imagePath: "assets/enemies/king-caesar.png", description: "The ancient guardian awakens to fight.", available: false },
+  { id: "hedorah", displayName: "Hedorah", maxHp: 100, imagePath: "assets/enemies/hedorah.png", description: "The smog monster oozes toxic danger.", available: false },
+  { id: "megaguirus", displayName: "Megaguirus", maxHp: 100, imagePath: "assets/enemies/megaguirus.png", description: "The giant prehistoric dragonfly strikes fast.", available: false }
+];
 
 const STARTER_MISSIONS = [
   { id: "read", label: "Read for 10 minutes" },
@@ -652,12 +679,6 @@ const MISSION_BATTLE_DEFS = {
   move: { attack: "Tail Strike", emoji: "💥", effect: "Powers a mighty tail stomp!", verb: "STRIKE" }
 };
 
-const MONSTER_FALLBACKS = {
-  hero: { emoji: "🦖", title: "GODZILLA" },
-  boss: { emoji: "🐉", title: "ENEMY KAIJU" },
-  city: { emoji: "🏙️", title: "BATTLE ZONE" },
-  district: { emoji: "🛡️", title: "ZONE" }
-};
 
 const DISTRICT_EMOJI = {
   shield: "🗼",
@@ -697,7 +718,7 @@ const MISSION_LOG_MAX = 25;
 const BADGE_DEFS = [
   { id: "first_defender", name: "First Defender", icon: "🛡️", desc: "Complete your first mission." },
   { id: "daily_defender", name: "Daily Defender", icon: "⭐", desc: "Complete all daily missions once." },
-  { id: "storm_breaker", name: "Storm Breaker", icon: "⚡", desc: "Defeat Storm Colossus once." },
+  { id: "storm_breaker", name: "Kaiju Breaker", icon: "⚡", desc: "Defeat your first enemy kaiju." },
   { id: "city_builder", name: "City Builder", icon: "🏗️", desc: "Get any city district to 100% protection." },
   { id: "rising_titan", name: "Rising Titan", icon: "🌟", desc: "Reach Young Kaiju stage." }
 ];
@@ -706,20 +727,24 @@ const TITLE_DEFS = [
   { id: "little_guardian", name: "Little Guardian", desc: "Complete your first mission.", minEnergy: 0, needsMission: true },
   { id: "shield_roarer", name: "Shield Roarer", desc: "Reach Young Kaiju stage.", minEnergy: 15 },
   { id: "city_protector", name: "City Protector", desc: "Reach City Guardian stage.", minEnergy: 35 },
-  { id: "storm_tamer", name: "Storm Tamer", desc: "Defeat Storm Colossus once.", needsBossWin: true }
+  { id: "storm_tamer", name: "Kaiju Tamer", desc: "Defeat your first enemy kaiju.", needsBossWin: true }
 ];
 
 const POWER_DEFS = [
-  { id: "thunder_roar", name: "Thunder Roar", desc: "A battle roar that shakes enemy kaiju. Unlock later." },
-  { id: "tailquake", name: "Tailquake", desc: "A ground-shaking tail strike. Unlock later." },
-  { id: "shield_stomp", name: "Shield Stomp", desc: "A defensive stomp that shields the city. Unlock later." },
-  { id: "skybreaker_charge", name: "Skybreaker Charge", desc: "A sky-charging rush at rival kaiju. Unlock later." }
+  { id: "thunder_roar", name: "Thunder Roar", icon: "🔊", desc: "A battle roar that shakes enemy kaiju. Unlock later." },
+  { id: "tailquake", name: "Tailquake", icon: "💥", desc: "A ground-shaking tail strike. Unlock later." },
+  { id: "shield_stomp", name: "Shield Stomp", icon: "🛡️", desc: "A defensive stomp that shields the city. Unlock later." },
+  { id: "skybreaker_charge", name: "Skybreaker Charge", icon: "⚡", desc: "A sky-charging rush at rival kaiju. Unlock later." }
 ];
 
+
 const IMAGE_MAP = {
-  hero: "assets/hero/godzilla-main.png",
-  boss: "assets/enemies/storm-colossus.png",
-  city: "assets/city/city-skyline.png",
+  player: PLAYER_CONFIG,
+  city: {
+    battleBg: "assets/city/city-battle-bg.png",
+    skyline: "assets/city/city-skyline.png"
+  },
+  roster: "assets/roster/kaiju-roster-reference.png",
   ui: {
     shield: "assets/ui/shield-icon.png"
   },
@@ -728,7 +753,8 @@ const IMAGE_MAP = {
     daily_defender: "assets/badges/daily-defender.png",
     storm_breaker: "assets/badges/storm-breaker.png",
     city_builder: "assets/badges/city-builder.png",
-    rising_titan: "assets/badges/rising-titan.png"
+    rising_titan: "assets/badges/rising-titan.png",
+    kaiju_champion: "assets/badges/kaiju-champion.png"
   },
   districts: {
     shield: "assets/ui/shield-icon.png",
@@ -739,8 +765,9 @@ const IMAGE_MAP = {
   }
 };
 
+
 const REWARD_LOG_MAX = 30;
-const DEFAULT_GUARDIAN_NAME = "Guardian Kaiju";
+const DEFAULT_GUARDIAN_NAME = "Godzilla";
 
 const PARENT_UNLOCK_KEY = "kq_parent_unlocked_until";
 const PARENT_SESSION_MS = 5 * 60 * 1000;
@@ -876,7 +903,7 @@ function defaultState() {
     kaijuLevel: 1,
     kaijuEnergy: 0,
     cityIntegrity: 100,
-    boss: { name: BOSS_NAME, maxHp: BOSS_MAX_HP, currentHp: BOSS_MAX_HP, defeated: false },
+    boss: buildBossState(DEFAULT_ENEMY_ID, BOSS_MAX_HP, false),
     districts: defaultDistricts(),
     badges: [],
     unlockedTitles: [],
@@ -900,12 +927,7 @@ function normalizeState(raw) {
   if (!raw || typeof raw !== "object") return base;
 
   const merged = { ...base, ...raw };
-  merged.boss = {
-    name: BOSS_NAME,
-    maxHp: BOSS_MAX_HP,
-    currentHp: Math.max(0, Math.min(BOSS_MAX_HP, Number(raw.boss && raw.boss.currentHp != null ? raw.boss.currentHp : BOSS_MAX_HP))),
-    defeated: false
-  };
+  merged.boss = normalizeBossState(raw.boss);
   merged.kaijuEnergy = Number(raw.kaijuEnergy != null ? raw.kaijuEnergy : raw.energyPoints || 0);
   merged.kaijuLevel = Number(raw.kaijuLevel != null ? raw.kaijuLevel : raw.defenderLevel || 1);
   merged.cityIntegrity = Math.max(0, Math.min(100, Number(raw.cityIntegrity != null ? raw.cityIntegrity : 100)));
@@ -1238,6 +1260,7 @@ function handleBossDefeat() {
   state.boss.currentHp = 0;
   state.victoryLog.unshift({
     bossName: state.boss.name,
+    enemyId: state.boss.enemyId,
     at: Date.now(),
     dateKey: state.todayKey
   });
@@ -1247,11 +1270,11 @@ function handleBossDefeat() {
 
 function startNewBossBattle() {
   if (!requireParentUnlocked()) return;
-  if (!confirm("Start a new battle against Storm Colossus? HP resets to full.")) return;
-  state.boss.currentHp = BOSS_MAX_HP;
-  state.boss.defeated = false;
+  const enemy = getCurrentEnemyDef();
+  if (!confirm("Start a new battle against " + enemy.displayName + "? HP resets to full.")) return;
+  state.boss = buildBossState(state.boss.enemyId || DEFAULT_ENEMY_ID, enemy.maxHp, false);
   save();
-  showParentMsg("New Storm Colossus battle started.", false);
+  showParentMsg("New battle against " + enemy.displayName + " started.", false);
 }
 
 function missionsCompletedToday() {
@@ -1313,8 +1336,9 @@ function clearMissionLog() {
 
 function restoreBossHp() {
   if (!requireParentUnlocked()) return;
-  if (!confirm("Restore Storm Colossus to full HP?")) return;
-  state.boss.currentHp = BOSS_MAX_HP;
+  const enemy = getCurrentEnemyDef();
+  if (!confirm("Restore " + enemy.displayName + " to full HP?")) return;
+  state.boss.currentHp = enemy.maxHp;
   state.boss.defeated = false;
   save();
   showParentMsg("Boss HP restored.", false);
@@ -1364,19 +1388,21 @@ function renderBossHp() {
   setText("bossHpTextKaiju", text);
   setStyleWidth("bossHpBarKaiju", pct + "%");
 
+  const enemy = getCurrentEnemyDef();
+  const enemyName = enemy.displayName;
   const defeated = state.boss.defeated || state.boss.currentHp <= 0;
   const status = document.getElementById("bossStatus");
   if (status) {
-    if (defeated) status.textContent = "🎉 ENEMY KAIJU DEFEATED! Storm Colossus has been knocked down!";
-    else if (state.boss.currentHp <= 30) status.textContent = "🔥 The enemy kaiju is wobbling! Keep blasting!";
-    else status.textContent = "⚠️ Storm Colossus threatens the city! Launch mission attacks now!";
+    if (defeated) status.textContent = "🎉 ENEMY KAIJU DEFEATED! " + enemyName + " has been knocked down!";
+    else if (state.boss.currentHp <= 30) status.textContent = "🔥 " + enemyName + " is wobbling! Keep blasting!";
+    else status.textContent = "⚠️ " + enemyName + " threatens the city! Launch mission attacks now!";
   }
 
   const banner = document.getElementById("victoryBanner");
   if (banner) {
     if (defeated) {
       banner.hidden = false;
-      banner.textContent = "🎉 ENEMY KAIJU DEFEATED! GODZILLA knocked down Storm Colossus! The city is safe!";
+      banner.textContent = "🎉 ENEMY KAIJU DEFEATED! Godzilla knocked down " + enemyName + "! The city is safe!";
     } else {
       banner.hidden = true;
       banner.textContent = "";
@@ -1505,53 +1531,59 @@ function renderTitles() {
   }).join("");
 }
 
+function powerCardHtml(pw, statusText) {
+  const artBlock = pw.imagePath
+    ? '<div class="power-art">' + imgSlot(pw.imagePath, pw.name, "compact") + '</div>'
+    : '<div class="power-icon">' + (pw.icon || "⚡") + '</div>';
+  return '<div class="power-card locked">' +
+    artBlock +
+    '<div class="name">' + escapeHtml(pw.name) + '</div>' +
+    '<div class="small">' + escapeHtml(statusText || pw.desc) + '</div></div>';
+}
+
 function renderPowers() {
   const grid = document.getElementById("powerGrid");
   if (!grid) return;
-  grid.innerHTML = POWER_DEFS.map((pw) =>
-    '<div class="power-card locked">' +
-    '<div class="power-art">' + imgSlot("", pw.name, "compact") + '</div>' +
-    '<div class="name">' + escapeHtml(pw.name) + '</div>' +
-    '<div class="small">' + escapeHtml(pw.desc) + '</div></div>'
-  ).join("");
+  grid.innerHTML = POWER_DEFS.map((pw) => powerCardHtml(pw, pw.desc)).join("");
   const preview = document.getElementById("kaijuPowerPreview");
   if (preview) {
-    preview.innerHTML = POWER_DEFS.map((pw) =>
-      '<div class="power-card locked">' +
-      '<div class="power-art">' + imgSlot("", pw.name, "compact") + '</div>' +
-      '<div class="name">' + escapeHtml(pw.name) + '</div>' +
-      '<div class="small">Locked</div></div>'
-    ).join("");
+    preview.innerHTML = POWER_DEFS.map((pw) => powerCardHtml(pw, "Locked")).join("");
   }
 }
 
 function renderMonsterImages() {
   const heroName = heroDisplayName();
-  const bossName = state.boss.name || BOSS_NAME;
+  const enemy = getCurrentEnemyDef();
+  const bossName = enemy.displayName;
+  const playerImg = getPlayerImagePath();
+  const enemyImg = enemy.imagePath;
   const stage = getGrowthStage(state.kaijuEnergy);
   const equipped = TITLE_DEFS.find((t) => t.id === state.equippedTitleId);
   const titleLabel = equipped ? equipped.name : "None";
   const defeated = state.boss.defeated || state.boss.currentHp <= 0;
 
-  const fillMonster = (id, src, label, role) => {
+  const fillFighter = (id, src, cardClass) => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = monsterSlot(src, label, "tall", role);
+    if (el) el.innerHTML = fighterAssetSlot(src, "tall", cardClass);
   };
-  fillMonster("dashboardHeroPanel", IMAGE_MAP.hero, heroName, "hero");
-  fillMonster("dashboardBossPanel", IMAGE_MAP.boss, bossName, "boss");
-  fillMonster("kaijuHeroShowcase", IMAGE_MAP.hero, heroName, "hero");
+  fillFighter("dashboardHeroPanel", playerImg, "hero-card");
+  fillFighter("dashboardBossPanel", enemyImg, "enemy-card");
+  fillFighter("kaijuHeroShowcase", playerImg, "hero-card");
   const thumb = (id) => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = imgSlot(IMAGE_MAP.boss, bossName, "compact");
+    if (el) el.innerHTML = imgSlot(enemyImg, bossName, "compact");
   };
   thumb("dashboardBossThumb");
   thumb("kaijuBossThumb");
 
   const cityBg = document.getElementById("dashboardCityBg");
-  if (cityBg) cityBg.innerHTML = imgSlot(IMAGE_MAP.city, "City Skyline", "wide");
+  if (cityBg) cityBg.innerHTML = imgSlot(IMAGE_MAP.city.battleBg, IMAGE_MAP.city.battleBg, "wide");
 
   const cityBanner = document.getElementById("cityBanner");
-  if (cityBanner) cityBanner.innerHTML = monsterSlot(IMAGE_MAP.city, "Protected City", "wide", "city");
+  if (cityBanner) cityBanner.innerHTML = imgSlot(IMAGE_MAP.city.skyline, IMAGE_MAP.city.skyline, "wide");
+
+  const roster = document.getElementById("kaijuRosterRef");
+  if (roster) roster.innerHTML = imgSlot(IMAGE_MAP.roster, IMAGE_MAP.roster, "wide");
 
   const cityDefend = document.getElementById("cityDefendBanner");
   if (cityDefend) {
@@ -1629,11 +1661,14 @@ function renderVictoryLog() {
     return;
   }
   if (empty) empty.style.display = "none";
-  list.innerHTML = state.victoryLog.map((v) =>
-    '<li class="trophy-item"><div class="trophy-icon">🏆</div><div><div class="trophy-text">' +
-    escapeHtml(v.bossName) + ' knocked down!</div><div class="trophy-sub">Enemy kaiju defeated — ' +
-    escapeHtml(formatLogTime(v.at)) + '</div></div></li>'
-  ).join("");
+  list.innerHTML = state.victoryLog.map((v) => {
+    const def = (v.enemyId && getEnemyDef(v.enemyId)) || getEnemyDefByName(v.bossName);
+    const imgPath = def ? def.imagePath : "";
+    const art = '<div class="trophy-art">' + imgSlot(imgPath, v.bossName, "compact") + '</div>';
+    return '<li class="trophy-item">' + art + '<div><div class="trophy-text">' +
+      escapeHtml(v.bossName) + ' knocked down!</div><div class="trophy-sub">Enemy kaiju defeated — ' +
+      escapeHtml(formatLogTime(v.at)) + '</div></div></li>';
+  }).join("");
 }
 
 function renderCityStatus() {
@@ -1695,7 +1730,70 @@ function setStyleWidth(id, value) {
 function imgFallback(img) {
   img.classList.add("img-broken");
   const slot = img.closest(".img-slot");
-  if (slot) slot.classList.remove("has-image");
+  if (slot) {
+    slot.classList.remove("has-image");
+    const prompt = slot.querySelector(".img-placeholder");
+    const path = img.dataset.assetPath || img.getAttribute("src") || "";
+    if (prompt) prompt.textContent = assetPrompt(path);
+  }
+}
+
+
+function getEnemyDef(id) {
+  return ENEMY_KAIJU_DEFS.find((e) => e.id === id) || null;
+}
+
+function getEnemyDefByName(name) {
+  if (!name) return null;
+  const lower = String(name).toLowerCase();
+  if (lower.indexOf("storm colossus") >= 0) return getEnemyDef(DEFAULT_ENEMY_ID);
+  return ENEMY_KAIJU_DEFS.find((e) => e.displayName.toLowerCase() === lower) || null;
+}
+
+function getCurrentEnemyDef() {
+  return getEnemyDef(state.boss.enemyId) || getEnemyDefByName(state.boss.name) || getEnemyDef(DEFAULT_ENEMY_ID);
+}
+
+function buildBossState(enemyId, currentHp, defeated) {
+  const def = getEnemyDef(enemyId) || getEnemyDef(DEFAULT_ENEMY_ID);
+  const maxHp = def.maxHp || BOSS_MAX_HP;
+  const hp = Math.max(0, Math.min(maxHp, Number(currentHp != null ? currentHp : maxHp)));
+  return {
+    enemyId: def.id,
+    name: def.displayName,
+    maxHp: maxHp,
+    currentHp: hp,
+    defeated: Boolean(defeated) || hp <= 0
+  };
+}
+
+function normalizeBossState(rawBoss) {
+  let enemyId = rawBoss && rawBoss.enemyId;
+  if (!enemyId && rawBoss && rawBoss.name) {
+    const byName = getEnemyDefByName(rawBoss.name);
+    if (byName) enemyId = byName.id;
+  }
+  if (!enemyId) enemyId = DEFAULT_ENEMY_ID;
+  const def = getEnemyDef(enemyId) || getEnemyDef(DEFAULT_ENEMY_ID);
+  const maxHp = def.maxHp || BOSS_MAX_HP;
+  const currentHp = Math.max(0, Math.min(maxHp, Number(rawBoss && rawBoss.currentHp != null ? rawBoss.currentHp : maxHp)));
+  const defeated = Boolean(rawBoss && rawBoss.defeated) || currentHp <= 0;
+  return {
+    enemyId: def.id,
+    name: def.displayName,
+    maxHp: maxHp,
+    currentHp: defeated ? 0 : currentHp,
+    defeated: defeated
+  };
+}
+
+function getPlayerImagePath() {
+  if (state.kaijuEnergy >= POWERED_IMAGE_MIN_ENERGY) return PLAYER_CONFIG.poweredImage;
+  return PLAYER_CONFIG.mainImage;
+}
+
+function assetPrompt(path) {
+  return path ? ("Add image: " + path) : "Add image: (path not set)";
 }
 
 function missionBattleDef(id) {
@@ -1704,23 +1802,21 @@ function missionBattleDef(id) {
 
 function imgSlot(src, label, className) {
   const cls = "img-slot " + (className || "compact");
-  const safeLabel = escapeHtml(label || "Image");
+  const path = src || "";
+  const prompt = path ? assetPrompt(path) : "";
+  const safePrompt = escapeHtml(prompt);
+  const safeLabel = escapeHtml(label || "Kaiju");
   let imgTag = "";
-  if (src) {
-    const safeSrc = escapeHtml(src);
-    imgTag = '<img src="' + safeSrc + '" alt="' + safeLabel + '" loading="lazy" onerror="imgFallback(this)" onload="this.parentElement.classList.add(\'has-image\')">';
+  if (path) {
+    const safeSrc = escapeHtml(path);
+    imgTag = '<img src="' + safeSrc + '" alt="' + safeLabel + '" data-asset-path="' + safeSrc + '" loading="lazy" onerror="imgFallback(this)" onload="this.parentElement.classList.add(\'has-image\')">';
   }
   return '<div class="' + cls + '">' + imgTag +
-    '<div class="img-placeholder">' + safeLabel + '</div></div>';
+    '<div class="img-placeholder asset-prompt">' + safePrompt + '</div></div>';
 }
 
-function monsterSlot(src, label, className, role) {
-  const fb = MONSTER_FALLBACKS[role] || { emoji: "👾", title: (label || "KAIJU").toUpperCase() };
-  const inner = imgSlot(src, label, className || "tall");
-  return '<div class="monster-card ' + (role === "hero" ? "hero-card" : role === "boss" ? "enemy-card" : "") + '">' +
-    '<div class="monster-emoji">' + fb.emoji + '</div>' +
-    '<div class="monster-title">' + escapeHtml(fb.title) + '</div>' +
-    inner + '</div>';
+function fighterAssetSlot(src, className, cardClass) {
+  return '<div class="monster-card ' + cardClass + '">' + imgSlot(src, src, className || "tall") + '</div>';
 }
 
 function badgeImagePath(id) {
@@ -1732,7 +1828,7 @@ function districtIconPath(id) {
 }
 
 function heroDisplayName() {
-  return state.guardianKaijuName || DEFAULT_GUARDIAN_NAME;
+  return state.guardianKaijuName || PLAYER_CONFIG.displayName || DEFAULT_GUARDIAN_NAME;
 }
 
 function escapeHtml(str) {
