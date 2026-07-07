@@ -35,8 +35,9 @@ Then visit: http://localhost:8080/index.html
 ```
 ├── index.html              # Main app
 ├── manifest.webmanifest    # PWA manifest (icons TBD)
+├── images/                 # Drop new source art here (see images/README.md)
 ├── assets/
-│   ├── hero/               # Godzilla player images
+│   ├── hero/               # Godzilla player images (app reads these)
 │   ├── enemies/            # Enemy kaiju images
 │   ├── city/               # City skyline / battle backgrounds
 │   ├── badges/             # Badge / trophy images
@@ -45,6 +46,7 @@ Then visit: http://localhost:8080/index.html
 ├── backups/                # Local progress snapshots (gitignored)
 ├── scripts/
 │   ├── check-syntax.py     # Verify inline JS parses
+│   ├── import-images.py    # Copy images/ → assets/ with optimization
 │   └── smoke-test.py       # Headless load test (requires Playwright)
 └── .cursor/rules/          # Backup-before-change workflow
 ```
@@ -63,12 +65,21 @@ Do **not** reuse Hero's Journey Firebase keys, `localStorage` keys, collections,
 
 ## Kaiju images (manual assets)
 
-This is a **private family app**. You provide real Godzilla/kaiju PNG files manually. Paths are configured in `PLAYER_CONFIG`, `ENEMY_KAIJU_DEFS`, and `IMAGE_MAP` inside `index.html`.
+This is a **private family app**. You provide real Godzilla/kaiju art manually.
+
+**Workflow:** Drop files in `images/` using the friendly names in `images/README.md`, then run:
+
+```powershell
+python scripts/import-images.py
+```
+
+That copies optimized PNGs into `assets/` where the app loads them. Paths are also configured in `PLAYER_CONFIG`, `ENEMY_KAIJU_DEFS`, and `IMAGE_MAP` inside `index.html`.
 
 ### Folders
 
 | Folder | Purpose |
 |--------|---------|
+| `images/` | Your drop folder for new source art (before import) |
 | `assets/hero/` | Godzilla (player) images |
 | `assets/enemies/` | Enemy kaiju battle images |
 | `assets/city/` | City skyline and battle backgrounds |
