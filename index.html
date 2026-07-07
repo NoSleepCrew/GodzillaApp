@@ -73,6 +73,7 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
   box-shadow:0 10px 28px rgba(0,0,0,.25);
 }
 .card h2{margin:0 0 10px; font-family:var(--font-display); font-size:20px; color:var(--accent)}
+.card h3{margin:0 0 8px; font-size:16px; color:var(--ink)}
 .card p{margin:0 0 10px; line-height:1.5; color:var(--muted)}
 .card p:last-child{margin-bottom:0}
 .small{font-size:13px; font-weight:600}
@@ -83,8 +84,33 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 }
 .stat .label{display:block; font-size:12px; color:var(--muted); margin-bottom:4px}
 .stat .value{font-family:var(--font-display); font-size:22px; color:var(--accent)}
+.boss-bar-wrap{margin:12px 0 6px}
+.boss-bar{height:18px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid var(--line);overflow:hidden}
+.boss-bar .fill{height:100%;background:linear-gradient(90deg,var(--danger),#ff9aa3);transition:width .35s}
+.boss-bar-label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+.mission-list{display:grid;gap:10px;margin-top:12px}
+.mission-card{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 12px;border-radius:14px;border:1px solid var(--line);
+  background:rgba(0,0,0,.18);
+}
+.mission-card.done{opacity:.72;border-color:var(--accent-dim)}
+.mission-card .title{color:var(--ink);font-weight:800}
+.mission-card .done-tag{color:var(--accent);font-size:12px;font-weight:800}
+.mission-card button{
+  font-family:var(--font-body);font-weight:800;font-size:13px;
+  border:1px solid var(--accent-dim);background:rgba(61,255,168,.12);
+  color:var(--accent);border-radius:999px;padding:8px 14px;cursor:pointer;
+}
+.mission-card button:disabled{opacity:.45;cursor:not-allowed}
+.log-list{margin:10px 0 0;padding:0;list-style:none}
+.log-list li{
+  padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(0,0,0,.15);margin-bottom:8px;font-size:13px;color:var(--muted);
+}
+.log-list li b{color:var(--ink)}
 .placeholder-art{
-  height:140px; border-radius:14px; border:1px dashed var(--line);
+  height:120px; border-radius:14px; border:1px dashed var(--line);
   display:flex; align-items:center; justify-content:center;
   color:var(--muted); font-size:14px; margin:12px 0;
   background:rgba(0,0,0,.15);
@@ -94,9 +120,17 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
   font-size:12px; font-weight:800; border:1px solid var(--line);
   background:rgba(255,179,71,.12); color:var(--warn);
 }
+.parent-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.parent-actions button{
+  font-family:var(--font-body);font-weight:800;font-size:13px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  border-radius:10px;padding:10px 14px;cursor:pointer;
+}
+.parent-actions button.warn{border-color:var(--danger);color:#ffc4c8;background:rgba(255,92,106,.12)}
 footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 @media(max-width:640px){
   nav button{font-size:13px; padding:7px 11px}
+  .mission-card{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
@@ -109,30 +143,40 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 </header>
 
 <nav id="mainNav" aria-label="Main navigation">
-  <button type="button" onclick="showScreen('dashboard')" id="nav-dashboard" class="active">📊 Dashboard</button>
-  <button type="button" onclick="showScreen('missions')" id="nav-missions">📋 Missions</button>
-  <button type="button" onclick="showScreen('kaiju')" id="nav-kaiju">🦕 Kaiju</button>
-  <button type="button" onclick="showScreen('city')" id="nav-city">🏙️ City</button>
-  <button type="button" onclick="showScreen('rewards')" id="nav-rewards">🎁 Rewards</button>
-  <button type="button" onclick="showScreen('rulebook')" id="nav-rulebook">📖 Rulebook</button>
-  <button type="button" onclick="showScreen('parent')" id="nav-parent">⚙ Parent</button>
+  <button type="button" onclick="showScreen('dashboard')" id="nav-dashboard" class="active">Dashboard</button>
+  <button type="button" onclick="showScreen('missions')" id="nav-missions">Missions</button>
+  <button type="button" onclick="showScreen('kaiju')" id="nav-kaiju">Kaiju</button>
+  <button type="button" onclick="showScreen('city')" id="nav-city">City</button>
+  <button type="button" onclick="showScreen('rewards')" id="nav-rewards">Rewards</button>
+  <button type="button" onclick="showScreen('rulebook')" id="nav-rulebook">Rulebook</button>
+  <button type="button" onclick="showScreen('parent')" id="nav-parent">Parent</button>
 </nav>
 
 <main>
   <section id="dashboard" class="screen active">
     <div class="card">
       <h2>Command Center</h2>
-      <p>Welcome, <span id="defenderName">Defender</span>. This dashboard will track your progress across missions, city restoration, and rewards.</p>
+      <p>Welcome, <span id="defenderName">Defender</span>. Track your kaiju power, weekly boss threat, and city status.</p>
       <div class="stat-grid">
-        <div class="stat"><span class="label">Defender Level</span><span class="value" id="defenderLevel">1</span></div>
-        <div class="stat"><span class="label">Energy Points</span><span class="value" id="energyPoints">0</span></div>
+        <div class="stat"><span class="label">Kaiju Level</span><span class="value" id="kaijuLevel">1</span></div>
+        <div class="stat"><span class="label">Kaiju Energy</span><span class="value" id="kaijuEnergy">0</span></div>
         <div class="stat"><span class="label">City Integrity</span><span class="value" id="cityIntegrity">100%</span></div>
-        <div class="stat"><span class="label">Missions Logged</span><span class="value" id="missionsLogged">0</span></div>
+        <div class="stat"><span class="label">Missions Today</span><span class="value" id="missionsToday">0</span></div>
       </div>
     </div>
     <div class="card">
+      <h2>Weekly Boss</h2>
+      <p class="boss-bar-label"><span id="bossName">Storm Colossus</span><span id="bossHpText">100 / 100 HP</span></p>
+      <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBar" style="width:100%"></div></div></div>
+      <p class="small" id="bossStatus">The colossus looms over the harbor district.</p>
+    </div>
+    <div class="card">
+      <h2>Recent Mission Log</h2>
+      <ul class="log-list" id="missionLogPreview"></ul>
+      <p class="small" id="missionLogEmpty">Complete a mission to build your log.</p>
+    </div>
+    <div class="card">
       <h2>Status</h2>
-      <p><span class="badge">Phase 1 Shell</span> Game logic is not built yet. Progress is saved locally on this device.</p>
       <p class="small" id="syncStatus">Cloud sync: inactive (local only)</p>
     </div>
   </section>
@@ -140,100 +184,171 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
   <section id="missions" class="screen">
     <div class="card">
       <h2>Mission Board</h2>
-      <p>Daily and weekly missions will appear here — chores, reading, cooperation, and other defender tasks.</p>
-      <div class="placeholder-art">Mission cards coming soon</div>
-      <p class="small">Mission tracking and parent approval flows will be added in a later phase.</p>
+      <p>Complete missions to gain kaiju energy, damage the weekly boss, and protect the city.</p>
+      <div class="mission-list" id="missionList"></div>
+      <p class="small">Each mission can be completed once per day. Values are simple for now and easy to tune later.</p>
+    </div>
+    <div class="card">
+      <h2>Full Mission Log</h2>
+      <ul class="log-list" id="missionLogFull"></ul>
     </div>
   </section>
 
   <section id="kaiju" class="screen">
     <div class="card">
       <h2>Kaiju Threat Monitor</h2>
-      <p>Track the colossal threat looming over the harbor district. Strike back by completing missions.</p>
-      <div class="placeholder-art">Kaiju encounter view coming soon</div>
-      <p class="small">Threat level, battle animations, and strike rewards are planned for a future update.</p>
+      <p>Your kaiju energy grows as you complete missions. Energy also fuels strikes against the weekly boss.</p>
+      <div class="stat-grid">
+        <div class="stat"><span class="label">Kaiju Level</span><span class="value" id="kaijuLevelKaiju">1</span></div>
+        <div class="stat"><span class="label">Kaiju Energy</span><span class="value" id="kaijuEnergyKaiju">0</span></div>
+      </div>
+      <div class="placeholder-art" id="kaijuArtLabel">Storm Colossus — threat active</div>
+      <p class="boss-bar-label"><span id="bossNameKaiju">Storm Colossus</span><span id="bossHpTextKaiju">100 / 100 HP</span></p>
+      <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBarKaiju" style="width:100%"></div></div></div>
     </div>
   </section>
 
   <section id="city" class="screen">
     <div class="card">
       <h2>City Restoration</h2>
-      <p>As you complete missions, districts of the city will be restored — parks, transit, schools, and neighborhoods.</p>
-      <div class="placeholder-art">City map coming soon</div>
-      <p class="small">Restoration progress will tie into mission completion and long-term goals.</p>
+      <p>Mission success keeps districts safe. Low integrity means storm damage; completing missions repairs and protects the city.</p>
+      <div class="stat-grid">
+        <div class="stat"><span class="label">City Integrity</span><span class="value" id="cityIntegrityCity">100%</span></div>
+      </div>
+      <div class="placeholder-art">District map coming in a later phase</div>
+      <p class="small" id="cityStatus">The city stands strong.</p>
     </div>
   </section>
 
   <section id="rewards" class="screen">
     <div class="card">
       <h2>Reward Vault</h2>
-      <p>Earned rewards, screen-time credits, and milestone prizes will be listed here after parent approval.</p>
-      <div class="placeholder-art">Reward checklist coming soon</div>
-      <p class="small">Nothing can be claimed automatically — parents will approve payouts in the Parent area.</p>
+      <p>Earned rewards and milestone prizes will be listed here after parent approval.</p>
+      <div class="placeholder-art">Reward checklist coming in Phase 3+</div>
+      <p class="small">No money or payout system yet — missions currently update energy, boss HP, and city integrity only.</p>
     </div>
   </section>
 
   <section id="rulebook" class="screen">
     <div class="card">
       <h2>Defender Rulebook</h2>
-      <p>The full agreement and quest rules will live here — how missions work, how rewards are earned, and what counts toward city restoration.</p>
-      <p class="small">Rulebook content will be written for your family’s Kaiju Quest campaign.</p>
+      <p>The full agreement and quest rules will live here. For now, the core loop is:</p>
+      <ul class="small" style="color:var(--muted);line-height:1.6;padding-left:20px">
+        <li>Complete daily missions on the Mission Board</li>
+        <li>Gain kaiju energy and level up over time</li>
+        <li>Deal damage to the weekly boss, Storm Colossus</li>
+        <li>Raise or protect city integrity</li>
+      </ul>
     </div>
   </section>
 
   <section id="parent" class="screen">
     <div class="card">
-      <h2>Parent Command Center</h2>
-      <p><span class="badge">Placeholder</span> This area is reserved for parent-only controls.</p>
-      <p>Later versions will include:</p>
-      <ul class="small" style="color:var(--muted);line-height:1.6;padding-left:20px">
-        <li>Parent code lock for approving mission progress and rewards</li>
-        <li>Award checklist — review and approve earned rewards with your child</li>
-        <li>Backup and restore of local progress</li>
-        <li>Settings for mission types, reward amounts, and testing mode</li>
-        <li>Cloud sync status when Firebase is connected (separate Kaiju Quest project)</li>
-      </ul>
-      <p class="small">Parent controls are not active in Phase 1. All changes are local-only placeholders.</p>
+      <h2>Parent / Testing Controls</h2>
+      <p><span class="badge">Parent testing only</span> No parent code lock yet. These buttons reset local progress for testing.</p>
+      <div class="parent-actions">
+        <button type="button" onclick="resetTodayMissions()">Reset today&apos;s missions</button>
+        <button type="button" onclick="resetBossHp()">Reset boss HP</button>
+        <button type="button" class="warn" onclick="resetAllProgress()">Reset all progress</button>
+      </div>
+      <p class="small" style="margin-top:14px">Future: parent code, award approval, backup/restore, and settings.</p>
     </div>
   </section>
 </main>
 
-<footer>Kaiju Quest: City Defender — local save only (Phase 1)</footer>
+<footer>Kaiju Quest: City Defender — local save only</footer>
 
 <script>
-/* ── Kaiju Quest: City Defender — Phase 1 shell ── */
+/* Kaiju Quest: City Defender — Phase 2 core plumbing */
 
-const APP_BUILD = "kq-phase1-shell-v1";
+const APP_BUILD = "kq-phase2-core-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
-const defaultState = () => ({
-  defenderName: "Defender",
-  defenderLevel: 1,
-  energyPoints: 0,
-  cityIntegrity: 100,
-  missionsLogged: 0,
-  log: [],
-  lastModified: 0
-});
+const BOSS_NAME = "Storm Colossus";
+const BOSS_MAX_HP = 100;
+const ENERGY_PER_MISSION = 5;
+const BOSS_DAMAGE_PER_MISSION = 20;
+const CITY_REPAIR_PER_MISSION = 4;
+const ENERGY_PER_LEVEL = 25;
 
-const defaultSettings = () => ({
-  theme: "kaiju-dark",
-  cloudEnabled: false
-});
+const STARTER_MISSIONS = [
+  { id: "read", label: "Read for 10 minutes" },
+  { id: "chore", label: "Help with one chore" },
+  { id: "school", label: "Practice school work" },
+  { id: "kindness", label: "Show kindness" },
+  { id: "move", label: "Move your body" }
+];
 
-let state = loadState();
+function todayKey() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return d.getFullYear() + "-" + m + "-" + day;
+}
+
+function defaultState() {
+  return {
+    defenderName: "Defender",
+    kaijuLevel: 1,
+    kaijuEnergy: 0,
+    cityIntegrity: 100,
+    boss: { name: BOSS_NAME, maxHp: BOSS_MAX_HP, currentHp: BOSS_MAX_HP },
+    missions: STARTER_MISSIONS.map((m) => ({ ...m, completedToday: false })),
+    missionLog: [],
+    todayKey: todayKey(),
+    lastModified: 0
+  };
+}
+
+function defaultSettings() {
+  return { theme: "kaiju-dark", cloudEnabled: false };
+}
+
+function normalizeState(raw) {
+  const base = defaultState();
+  if (!raw || typeof raw !== "object") return base;
+
+  const merged = { ...base, ...raw };
+  merged.boss = {
+    name: BOSS_NAME,
+    maxHp: BOSS_MAX_HP,
+    currentHp: Math.max(0, Math.min(BOSS_MAX_HP, Number(raw.boss && raw.boss.currentHp != null ? raw.boss.currentHp : BOSS_MAX_HP)))
+  };
+  merged.kaijuEnergy = Number(raw.kaijuEnergy != null ? raw.kaijuEnergy : raw.energyPoints || 0);
+  merged.kaijuLevel = Number(raw.kaijuLevel != null ? raw.kaijuLevel : raw.defenderLevel || 1);
+  merged.cityIntegrity = Math.max(0, Math.min(100, Number(raw.cityIntegrity != null ? raw.cityIntegrity : 100)));
+  merged.missionLog = Array.isArray(raw.missionLog) ? raw.missionLog : [];
+  merged.todayKey = raw.todayKey || todayKey();
+  merged.missions = STARTER_MISSIONS.map((starter) => {
+    const saved = Array.isArray(raw.missions) ? raw.missions.find((m) => m.id === starter.id) : null;
+    return { ...starter, completedToday: Boolean(saved && saved.completedToday) };
+  });
+  recalcKaijuLevel(merged);
+  return merged;
+}
+
+function recalcKaijuLevel(s) {
+  s.kaijuLevel = Math.max(1, 1 + Math.floor(s.kaijuEnergy / ENERGY_PER_LEVEL));
+}
+
+function ensureToday(s) {
+  const key = todayKey();
+  if (s.todayKey === key) return;
+  s.todayKey = key;
+  s.missions.forEach((m) => { m.completedToday = false; });
+}
+
+let state = normalizeState(loadRawState());
 let settings = loadSettings();
 
-function loadState() {
+function loadRawState() {
   try {
     const raw = localStorage.getItem(STATE_KEY);
-    if (!raw) return defaultState();
-    const parsed = JSON.parse(raw);
-    return { ...defaultState(), ...parsed, log: Array.isArray(parsed.log) ? parsed.log : [] };
+    return raw ? JSON.parse(raw) : null;
   } catch (e) {
-    console.warn("kq: could not load state, using defaults", e);
-    return defaultState();
+    console.warn("kq: could not parse state", e);
+    return null;
   }
 }
 
@@ -248,26 +363,148 @@ function loadSettings() {
 }
 
 function save() {
+  ensureToday(state);
   state.lastModified = Date.now();
+  recalcKaijuLevel(state);
   localStorage.setItem(STATE_KEY, JSON.stringify(state));
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   render();
 }
 
+function missionsCompletedToday() {
+  return state.missions.filter((m) => m.completedToday).length;
+}
+
+function completeMission(missionId) {
+  ensureToday(state);
+  const mission = state.missions.find((m) => m.id === missionId);
+  if (!mission || mission.completedToday) return;
+
+  mission.completedToday = true;
+  state.kaijuEnergy += ENERGY_PER_MISSION;
+  state.boss.currentHp = Math.max(0, state.boss.currentHp - BOSS_DAMAGE_PER_MISSION);
+  if (state.cityIntegrity < 100) {
+    state.cityIntegrity = Math.min(100, state.cityIntegrity + CITY_REPAIR_PER_MISSION);
+  }
+
+  state.missionLog.unshift({
+    id: mission.id,
+    label: mission.label,
+    at: Date.now(),
+    dateKey: state.todayKey
+  });
+  if (state.missionLog.length > 50) state.missionLog.length = 50;
+
+  recalcKaijuLevel(state);
+  save();
+}
+
+function resetTodayMissions() {
+  if (!confirm("Reset today's mission checkmarks? (Parent/testing)")) return;
+  state.missions.forEach((m) => { m.completedToday = false; });
+  state.todayKey = todayKey();
+  save();
+}
+
+function resetBossHp() {
+  if (!confirm("Reset Storm Colossus to full HP? (Parent/testing)")) return;
+  state.boss.currentHp = BOSS_MAX_HP;
+  save();
+}
+
+function resetAllProgress() {
+  if (!confirm("Reset ALL Kaiju Quest progress on this device? (Parent/testing)")) return;
+  state = defaultState();
+  save();
+}
+
+function formatLogTime(ts) {
+  try {
+    return new Date(ts).toLocaleString();
+  } catch (e) {
+    return "";
+  }
+}
+
+function renderBossHp() {
+  const pct = Math.round((state.boss.currentHp / state.boss.maxHp) * 100);
+  const text = state.boss.currentHp + " / " + state.boss.maxHp + " HP";
+  setText("bossName", state.boss.name);
+  setText("bossHpText", text);
+  setStyleWidth("bossHpBar", pct + "%");
+  setText("bossNameKaiju", state.boss.name);
+  setText("bossHpTextKaiju", text);
+  setStyleWidth("bossHpBarKaiju", pct + "%");
+
+  const status = document.getElementById("bossStatus");
+  if (status) {
+    if (state.boss.currentHp <= 0) status.textContent = "Storm Colossus has been driven back — for this week!";
+    else if (state.boss.currentHp <= 30) status.textContent = "The colossus is faltering. Keep up the pressure!";
+    else status.textContent = "The colossus looms over the harbor district.";
+  }
+}
+
+function renderMissionList() {
+  const list = document.getElementById("missionList");
+  if (!list) return;
+  list.innerHTML = state.missions.map((m) => {
+    const done = m.completedToday;
+    return '<div class="mission-card' + (done ? " done" : "") + '">' +
+      '<div><div class="title">' + escapeHtml(m.label) + '</div>' +
+      (done ? '<div class="done-tag">Completed today</div>' : '') +
+      '</div>' +
+      '<button type="button"' + (done ? " disabled" : "") + ' onclick="completeMission(\'' + m.id + '\')">' +
+      (done ? "Done" : "Complete") + '</button></div>';
+  }).join("");
+}
+
+function renderMissionLogs() {
+  const preview = document.getElementById("missionLogPreview");
+  const full = document.getElementById("missionLogFull");
+  const empty = document.getElementById("missionLogEmpty");
+  const entries = state.missionLog.slice(0, 10);
+  const html = entries.length
+    ? entries.map((e) => '<li><b>' + escapeHtml(e.label) + '</b> — ' + escapeHtml(formatLogTime(e.at)) + '</li>').join("")
+    : "";
+  if (preview) preview.innerHTML = html;
+  if (full) full.innerHTML = state.missionLog.map((e) =>
+    '<li><b>' + escapeHtml(e.label) + '</b> — ' + escapeHtml(formatLogTime(e.at)) + ' <span class="small">(' + escapeHtml(e.dateKey || "") + ')</span></li>'
+  ).join("");
+  if (empty) empty.style.display = entries.length ? "none" : "block";
+}
+
+function renderCityStatus() {
+  const el = document.getElementById("cityStatus");
+  if (!el) return;
+  if (state.cityIntegrity >= 100) el.textContent = "Districts are protected. Completing missions keeps the city safe.";
+  else if (state.cityIntegrity >= 60) el.textContent = "Some districts need repair — missions will help restore integrity.";
+  else el.textContent = "Storm damage is spreading. Complete missions to rebuild the city.";
+}
+
 function render() {
+  ensureToday(state);
   const buildEl = document.getElementById("buildTag");
   if (buildEl) buildEl.textContent = "App build: " + APP_BUILD;
 
   setText("defenderName", state.defenderName);
-  setText("defenderLevel", String(state.defenderLevel));
-  setText("energyPoints", String(state.energyPoints));
+  setText("kaijuLevel", String(state.kaijuLevel));
+  setText("kaijuEnergy", String(state.kaijuEnergy));
   setText("cityIntegrity", state.cityIntegrity + "%");
-  setText("missionsLogged", String(state.missionsLogged));
+  setText("missionsToday", String(missionsCompletedToday()));
+
+  setText("kaijuLevelKaiju", String(state.kaijuLevel));
+  setText("kaijuEnergyKaiju", String(state.kaijuEnergy));
+  setText("cityIntegrityCity", state.cityIntegrity + "%");
+
+  renderBossHp();
+  renderMissionList();
+  renderMissionLogs();
+  renderCityStatus();
 
   const syncEl = document.getElementById("syncStatus");
   if (syncEl) {
     syncEl.textContent = settings.cloudEnabled
-      ? "Cloud sync: connecting…"
+      ? "Cloud sync: connecting..."
       : "Cloud sync: inactive (local only)";
   }
 }
@@ -275,6 +512,19 @@ function render() {
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
+}
+
+function setStyleWidth(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.style.width = value;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function showScreen(id) {
@@ -286,10 +536,7 @@ function showScreen(id) {
   if (nav) nav.classList.add("active");
 }
 
-/* ── Firebase (inactive stub — new project later) ──
- * Do NOT reuse Hero's Journey Firebase config, keys, collections, or documents.
- * When ready: create a new Firebase project, paste config below, set settings.cloudEnabled = true.
- */
+/* Firebase inactive stub — new Kaiju Quest project later */
 const FIREBASE_STUB = {
   active: false,
   projectId: "kaiju-quest-placeholder",
@@ -310,12 +557,10 @@ async function initFirebase() {
     console.info("kq: Firebase inactive — localStorage only (" + FIREBASE_STUB.note + ")");
     return;
   }
-  // Future: load firebase compat scripts and sync to a NEW collection/document namespace.
-  // Example doc path (not wired): kaijuQuest / main
 }
 
 initFirebase();
-render();
+save();
 </script>
 </body>
 </html>

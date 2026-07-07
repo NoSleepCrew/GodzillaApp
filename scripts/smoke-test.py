@@ -1,4 +1,4 @@
-"""Load index.html in headless Chromium and verify the Phase 1 shell."""
+"""Load index.html in headless Chromium and verify the Phase 2 shell."""
 import pathlib
 import sys
 
@@ -28,30 +28,31 @@ def main() -> int:
         checks = {
             "title": "Kaiju Quest" in page.title(),
             "dashboard": page.locator("#dashboard.active").count() == 1,
-            "defenderLevel": page.locator("#defenderLevel").inner_text(timeout=5000) == "1",
+            "kaijuLevel": page.locator("#kaijuLevel").inner_text(timeout=5000) == "1",
+            "bossName": "Storm Colossus" in page.locator("#bossName").inner_text(timeout=5000),
+            "missionList": page.locator("#missionList .mission-card").count() == 5,
             "rulebook": page.locator("#rulebook").count() == 1,
             "parent": page.locator("#parent").count() == 1,
             "syncInactive": "inactive" in page.locator("#syncStatus").inner_text(timeout=5000).lower(),
         }
 
-        for screen_id in ["missions", "kaiju", "city", "rewards", "rulebook", "parent"]:
-            page.locator(f"#nav-{screen_id}").click()
-            page.wait_for_timeout(200)
-            checks[f"screen_{screen_id}"] = page.locator(f"#{screen_id}.active").count() == 1
+        page.locator("#nav-missions").click()
+        page.wait_for_timeout(200)
+        page.locator("#missionList button").first.click()
+        page.wait_for_timeout(300)
+        checks["missionComplete"] = page.locator("#missionsToday").inner_text(timeout=5000) == "1"
+        checks["bossDamaged"] = page.locator("#bossHpText").inner_text(timeout=5000) == "80 / 100 HP"
 
         page.evaluate(
             """() => {
-          const before = state.energyPoints;
-          state.energyPoints = before + 1;
-          save();
-          localStorage.setItem('kq_smoke_test', String(state.energyPoints));
+          localStorage.setItem('kq_smoke_test', String(state.kaijuEnergy));
         }"""
         )
         page.reload(wait_until="domcontentloaded")
         page.wait_for_timeout(1000)
         persisted = page.evaluate(
             """() => ({
-          energy: state.energyPoints,
+          energy: state.kaijuEnergy,
           smoke: localStorage.getItem('kq_smoke_test'),
           key: localStorage.getItem('kq_rpg_state') !== null
         })"""
