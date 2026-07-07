@@ -252,8 +252,10 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .power-card .power-art .img-slot{min-height:64px}
 @media (max-width:640px){
   .hero-profile{grid-template-columns:1fr}
-  .battle-fighters{flex-direction:column;align-items:stretch}
-  .vs-pill{align-self:center}
+  .battle-fighters{flex-direction:row;align-items:stretch}
+  .fighter-panel{max-width:none}
+  .battle-fighters .monster-card{aspect-ratio:2/3}
+  .vs-pill{align-self:center;flex-shrink:0}
 }
 
 .battle-command-card{border-color:rgba(61,250,163,.35);box-shadow:0 0 24px rgba(61,250,163,.08)}
@@ -266,10 +268,16 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .mega-bar .fill{height:100%;background:linear-gradient(90deg,#1a8f5c,var(--accent),#b8ffda);transition:width .35s}
 .mega-bar.boss-mega .fill{background:linear-gradient(90deg,#8f1a1a,var(--danger),#ff8a8a)}
 .mega-bar.energy-mega .fill{background:linear-gradient(90deg,#1a5c8f,var(--accent),#7dffe0)}
-.battle-scene{min-height:220px}
+.battle-scene{min-height:260px}
 .battle-scene .scene-city-bg{opacity:.55}
-.battle-fighters{min-height:220px;padding:18px 14px 16px;gap:8px}
-.fighter-panel{flex:1;max-width:46%}
+.battle-fighters{
+  min-height:240px;padding:14px 12px 12px;gap:10px;align-items:stretch;
+}
+.fighter-panel{flex:1 1 0;min-width:0;max-width:none;display:flex}
+.battle-fighters .monster-card{
+  width:100%;aspect-ratio:3/4;min-height:0;
+  display:block;padding:0;
+}
 .monster-card{
   border-radius:16px;border:2px solid var(--line);overflow:hidden;
   background:linear-gradient(180deg,rgba(61,250,163,.12),rgba(0,0,0,.45));
@@ -278,6 +286,13 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 }
 .monster-card.hero-card{border-color:rgba(61,250,163,.5)}
 .monster-card.enemy-card{border-color:rgba(255,92,92,.45);background:linear-gradient(180deg,rgba(255,92,92,.12),rgba(0,0,0,.45))}
+.battle-fighters .monster-card .img-slot{
+  position:absolute;inset:0;border:none;background:transparent;
+  min-height:0;width:100%;height:100%;border-radius:0;
+}
+.battle-fighters .monster-card .img-slot img{
+  object-fit:cover;object-position:center bottom;
+}
 .monster-card .img-slot{border:none;background:transparent;min-height:120px;width:100%}
 .monster-card .img-slot.tall{min-height:120px}
 .monster-card .img-placeholder{font-size:11px;font-weight:700;line-height:1.35;padding:14px}
@@ -630,7 +645,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 <script>
 /* Kaiju Quest: City Defender — Phase 8 kaiju assets */
 
-const APP_BUILD = "kq-phase8-kaiju-assets-v1";
+const APP_BUILD = "kq-phase8b-battle-aspect-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
