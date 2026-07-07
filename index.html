@@ -189,6 +189,69 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .guardian-name-row input{flex:1;min-width:160px;font-family:var(--font-body);font-weight:700;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:rgba(0,0,0,.25);color:var(--ink)}
 
 .reward-section{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.battle-scene{
+  position:relative;border-radius:14px;border:1px solid var(--line);overflow:hidden;
+  min-height:170px;margin:12px 0;background:linear-gradient(180deg,rgba(61,250,163,.08),rgba(0,0,0,.35));
+}
+.battle-scene .scene-city-bg{position:absolute;inset:0;opacity:.45;pointer-events:none}
+.battle-fighters{
+  position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;
+  gap:10px;padding:14px 12px 12px;min-height:170px;
+}
+.vs-pill{
+  align-self:center;font-weight:800;font-size:12px;color:var(--accent);
+  background:rgba(0,0,0,.35);border:1px solid var(--accent-dim);border-radius:999px;padding:6px 10px;
+}
+.fighter-slot{flex:1;max-width:150px}
+.battle-card{
+  margin-top:10px;padding:12px;border-radius:14px;border:1px solid var(--line);
+  background:rgba(0,0,0,.22);
+}
+.battle-card.defeated{border-color:rgba(61,250,163,.45);box-shadow:0 0 12px rgba(61,250,163,.12)}
+.battle-card-head{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.battle-card-art{width:72px;min-width:72px}
+.battle-card-title{font-weight:800;color:var(--ink);font-size:16px}
+.battle-card-sub{color:var(--muted);font-size:12px;margin-top:2px}
+.battle-card .boss-bar-wrap{margin-top:4px}
+.img-slot{
+  position:relative;border-radius:12px;border:1px dashed var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.25));
+  overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;
+}
+.img-slot.tall{min-height:140px}
+.img-slot.wide{min-height:110px}
+.img-slot.compact{min-height:88px}
+.img-slot.square{min-height:42px;aspect-ratio:1}
+.img-slot img{
+  width:100%;height:100%;object-fit:contain;display:block;position:absolute;inset:0;
+  background:transparent;
+}
+.img-slot img.img-broken{display:none}
+.img-placeholder{
+  padding:10px;font-size:12px;font-weight:800;color:var(--muted);line-height:1.3;z-index:0;
+}
+.img-slot.has-image .img-placeholder{opacity:.25;font-size:10px}
+.hero-profile{
+  display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:start;margin:12px 0;
+}
+.hero-profile-art .img-slot{min-height:120px}
+.hero-profile-meta .label{font-size:12px;color:var(--muted);margin-top:6px}
+.hero-profile-meta .value{font-weight:800;color:var(--ink)}
+.city-banner{margin:0 0 12px}
+.city-banner .img-slot{min-height:120px;border-radius:14px}
+.district-card{display:flex;gap:10px;align-items:flex-start}
+.district-card .district-icon{width:42px;min-width:42px}
+.district-card .district-body{flex:1}
+.badge-card .badge-art{margin-bottom:8px}
+.badge-card .badge-art .img-slot{min-height:72px}
+.power-card .power-art{margin-bottom:8px}
+.power-card .power-art .img-slot{min-height:64px}
+@media (max-width:640px){
+  .hero-profile{grid-template-columns:1fr}
+  .battle-fighters{flex-direction:column;align-items:stretch}
+  .vs-pill{align-self:center}
+}
+
 
 
 footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
@@ -239,9 +302,26 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
     </div>
     <div class="card">
       <h2>Rival Kaiju Battle</h2>
-      <p class="boss-bar-label"><span id="bossName">Storm Colossus</span><span id="bossHpText">100 / 100 HP</span></p>
-      <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBar" style="width:100%"></div></div></div>
-      <p class="small" id="bossStatus">Enemy kaiju Storm Colossus threatens the harbor district. Complete missions to strike back!</p>
+      <div class="battle-scene" id="dashboardBattleScene">
+        <div class="scene-city-bg" id="dashboardCityBg"></div>
+        <div class="battle-fighters">
+          <div class="fighter-slot hero-slot" id="dashboardHeroSlot"></div>
+          <div class="vs-pill">VS</div>
+          <div class="fighter-slot enemy-slot" id="dashboardBossSlot"></div>
+        </div>
+      </div>
+      <div class="battle-card" id="dashboardBossBattleCard">
+        <div class="battle-card-head">
+          <div class="battle-card-art" id="dashboardBossThumb"></div>
+          <div>
+            <div class="battle-card-title" id="bossName">Storm Colossus</div>
+            <div class="small battle-card-sub" id="bossBattleSub">Enemy Kaiju</div>
+          </div>
+        </div>
+        <p class="boss-bar-label"><span id="bossHpText">100 / 100 HP</span></p>
+        <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBar" style="width:100%"></div></div></div>
+        <p class="small" id="bossStatus">Enemy kaiju Storm Colossus threatens the harbor district. Complete missions to strike back!</p>
+      </div>
     </div>
     <div class="card">
       <h2>Recent Mission Log</h2>
@@ -284,9 +364,32 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       </div>
       <p class="small" id="stageProgressLabelKaiju">Growing toward the next stage...</p>
       <div class="stage-bar-wrap"><div class="stage-bar"><div class="fill" id="stageProgressBarKaiju" style="width:0%"></div></div></div>
-      <div class="placeholder-art" id="kaijuArtLabel">Your Guardian Kaiju grows stronger with every mission.</div>
-      <p class="boss-bar-label"><span id="bossNameKaiju">Storm Colossus</span><span id="bossHpTextKaiju">100 / 100 HP</span></p>
-      <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBarKaiju" style="width:100%"></div></div></div>
+      <div class="hero-profile" id="kaijuProfile">
+        <div class="hero-profile-art" id="kaijuHeroArt"></div>
+        <div class="hero-profile-meta">
+          <div class="label">Guardian Kaiju</div>
+          <div class="value" id="kaijuProfileName">Guardian Kaiju</div>
+          <div class="label">Growth Stage</div>
+          <div class="value" id="kaijuProfileStage">Hatchling</div>
+          <div class="label">Battle Title</div>
+          <div class="value" id="kaijuProfileTitle">None</div>
+        </div>
+      </div>
+      <p class="small" id="kaijuArtLabel">Your Guardian Kaiju grows stronger with every mission.</p>
+      <h3 class="small" style="color:var(--accent);margin-top:14px">Kaiju Powers</h3>
+      <div class="power-grid" id="kaijuPowerPreview"></div>
+      <h3 class="small" style="color:var(--accent);margin-top:14px">Rival Kaiju</h3>
+      <div class="battle-card" id="kaijuBossBattleCard">
+        <div class="battle-card-head">
+          <div class="battle-card-art" id="kaijuBossThumb"></div>
+          <div>
+            <div class="battle-card-title" id="bossNameKaiju">Storm Colossus</div>
+            <div class="small battle-card-sub" id="bossBattleSubKaiju">Enemy Kaiju</div>
+          </div>
+        </div>
+        <p class="boss-bar-label"><span id="bossHpTextKaiju">100 / 100 HP</span></p>
+        <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBarKaiju" style="width:100%"></div></div></div>
+      </div>
     </div>
   </section>
 
@@ -294,6 +397,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
     <div class="card">
       <h2>City Restoration</h2>
       <p>Mission success keeps districts safe. Low integrity means storm damage; completing missions repairs and protects the city.</p>
+      <div class="city-banner" id="cityBanner"></div>
       <div class="stat-grid">
         <div class="stat"><span class="label">City Integrity</span><span class="value" id="cityIntegrityCity">100%</span></div>
       </div>
@@ -401,9 +505,9 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 <footer>Kaiju Quest: City Defender — local save only</footer>
 
 <script>
-/* Kaiju Quest: City Defender — Phase 6 rewards */
+/* Kaiju Quest: City Defender — Phase 7 images */
 
-const APP_BUILD = "kq-phase6-rewards-v2";
+const APP_BUILD = "kq-phase7-images-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
@@ -470,6 +574,29 @@ const POWER_DEFS = [
   { id: "shield_stomp", name: "Shield Stomp", desc: "A defensive stomp that shields the city. Unlock later." },
   { id: "skybreaker_charge", name: "Skybreaker Charge", desc: "A sky-charging rush at rival kaiju. Unlock later." }
 ];
+
+const IMAGE_MAP = {
+  hero: "assets/hero/godzilla-main.png",
+  boss: "assets/enemies/storm-colossus.png",
+  city: "assets/city/city-skyline.png",
+  ui: {
+    shield: "assets/ui/shield-icon.png"
+  },
+  badges: {
+    first_defender: "assets/badges/first-defender.png",
+    daily_defender: "assets/badges/daily-defender.png",
+    storm_breaker: "assets/badges/storm-breaker.png",
+    city_builder: "assets/badges/city-builder.png",
+    rising_titan: "assets/badges/rising-titan.png"
+  },
+  districts: {
+    shield: "assets/ui/shield-icon.png",
+    harbor: "assets/ui/shield-icon.png",
+    skyrail: "assets/ui/shield-icon.png",
+    reactor: "assets/ui/shield-icon.png",
+    shelter: "assets/ui/shield-icon.png"
+  }
+};
 
 const REWARD_LOG_MAX = 30;
 const DEFAULT_GUARDIAN_NAME = "Guardian Kaiju";
@@ -1159,10 +1286,15 @@ function renderDistricts() {
     let status = "Needs repair";
     if (pct >= 100) status = "Fully protected";
     else if (pct >= 50) status = "Holding strong";
-    return '<div class="district-card"><div class="name">' + escapeHtml(d.name) + '</div>' +
+    const icon = districtIconPath(d.id);
+    return '<div class="district-card">' +
+      '<div class="district-icon">' + imgSlot(icon, d.name, "square") + '</div>' +
+      '<div class="district-body">' +
+      '<div class="name">' + escapeHtml(d.name) + '</div>' +
       '<div class="pct">' + pct + '%</div>' +
       '<div class="small">' + status + '</div>' +
-      '<div class="stage-bar-wrap"><div class="stage-bar"><div class="fill" style="width:' + pct + '%"></div></div></div></div>';
+      '<div class="stage-bar-wrap"><div class="stage-bar"><div class="fill" style="width:' + pct + '%"></div></div></div>' +
+      '</div></div>';
   }).join("");
 }
 
@@ -1174,8 +1306,11 @@ function renderBadges() {
     const status = earned
       ? "Earned " + formatLogTime(earned.earnedAt)
       : def.desc;
+    const art = badgeImagePath(def.id);
+    const artBlock = '<div class="badge-art">' + imgSlot(art, def.name, "compact") + '</div>';
+    const emoji = art ? "" : '<div class="icon">' + def.icon + '</div>';
     return '<div class="badge-card ' + (earned ? "earned" : "locked") + '">' +
-      '<div class="icon">' + def.icon + '</div>' +
+      artBlock + emoji +
       '<div class="title">' + escapeHtml(def.name) + '</div>' +
       '<div class="small">' + escapeHtml(status) + '</div></div>';
   }).join("");
@@ -1218,9 +1353,64 @@ function renderPowers() {
   if (!grid) return;
   grid.innerHTML = POWER_DEFS.map((pw) =>
     '<div class="power-card locked">' +
+    '<div class="power-art">' + imgSlot("", pw.name, "compact") + '</div>' +
     '<div class="name">' + escapeHtml(pw.name) + '</div>' +
     '<div class="small">' + escapeHtml(pw.desc) + '</div></div>'
   ).join("");
+  const preview = document.getElementById("kaijuPowerPreview");
+  if (preview) {
+    preview.innerHTML = POWER_DEFS.map((pw) =>
+      '<div class="power-card locked">' +
+      '<div class="power-art">' + imgSlot("", pw.name, "compact") + '</div>' +
+      '<div class="name">' + escapeHtml(pw.name) + '</div>' +
+      '<div class="small">Locked</div></div>'
+    ).join("");
+  }
+}
+
+function renderMonsterImages() {
+  const heroName = heroDisplayName();
+  const bossName = state.boss.name || BOSS_NAME;
+  const stage = getGrowthStage(state.kaijuEnergy);
+  const equipped = TITLE_DEFS.find((t) => t.id === state.equippedTitleId);
+  const titleLabel = equipped ? equipped.name : "None";
+  const defeated = state.boss.defeated || state.boss.currentHp <= 0;
+
+  const fillSlot = (id, src, label, cls) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = imgSlot(src, label, cls || "tall");
+  };
+  fillSlot("dashboardHeroSlot", IMAGE_MAP.hero, heroName, "tall");
+  fillSlot("kaijuHeroArt", IMAGE_MAP.hero, heroName, "tall");
+  fillSlot("dashboardBossSlot", IMAGE_MAP.boss, bossName, "tall");
+  fillSlot("dashboardBossThumb", IMAGE_MAP.boss, bossName, "compact");
+  fillSlot("kaijuBossThumb", IMAGE_MAP.boss, bossName, "compact");
+
+  const cityBg = document.getElementById("dashboardCityBg");
+  if (cityBg) cityBg.innerHTML = imgSlot(IMAGE_MAP.city, "City Skyline", "wide");
+
+  const cityBanner = document.getElementById("cityBanner");
+  if (cityBanner) cityBanner.innerHTML = imgSlot(IMAGE_MAP.city, "Protected City", "wide");
+
+  const profileName = document.getElementById("kaijuProfileName");
+  if (profileName) profileName.textContent = heroName;
+  const profileStage = document.getElementById("kaijuProfileStage");
+  if (profileStage) profileStage.textContent = stage.name;
+  const profileTitle = document.getElementById("kaijuProfileTitle");
+  if (profileTitle) profileTitle.textContent = titleLabel;
+
+  ["dashboardBossBattleCard", "kaijuBossBattleCard"].forEach((id) => {
+    const card = document.getElementById(id);
+    if (!card) return;
+    if (defeated) card.classList.add("defeated");
+    else card.classList.remove("defeated");
+  });
+
+  const sub = defeated ? "Defeated!" : "Enemy Kaiju";
+  const bossSub = document.getElementById("bossBattleSub");
+  if (bossSub) bossSub.textContent = sub;
+  const bossSubKaiju = document.getElementById("bossBattleSubKaiju");
+  if (bossSubKaiju) bossSubKaiju.textContent = sub;
 }
 
 function renderRewardLog() {
@@ -1279,6 +1469,7 @@ function render() {
   renderKidFeedback();
   renderGrowthStage();
   renderBossHp();
+  renderMonsterImages();
   renderDistricts();
   renderBadges();
   renderTitles();
@@ -1306,6 +1497,36 @@ function setText(id, value) {
 function setStyleWidth(id, value) {
   const el = document.getElementById(id);
   if (el) el.style.width = value;
+}
+
+function imgFallback(img) {
+  img.classList.add("img-broken");
+  const slot = img.closest(".img-slot");
+  if (slot) slot.classList.remove("has-image");
+}
+
+function imgSlot(src, label, className) {
+  const cls = "img-slot " + (className || "compact");
+  const safeLabel = escapeHtml(label || "Image");
+  let imgTag = "";
+  if (src) {
+    const safeSrc = escapeHtml(src);
+    imgTag = '<img src="' + safeSrc + '" alt="' + safeLabel + '" loading="lazy" onerror="imgFallback(this)" onload="this.parentElement.classList.add(\'has-image\')">';
+  }
+  return '<div class="' + cls + '">' + imgTag +
+    '<div class="img-placeholder">' + safeLabel + '</div></div>';
+}
+
+function badgeImagePath(id) {
+  return (IMAGE_MAP.badges && IMAGE_MAP.badges[id]) || "";
+}
+
+function districtIconPath(id) {
+  return (IMAGE_MAP.districts && IMAGE_MAP.districts[id]) || IMAGE_MAP.ui.shield || "";
+}
+
+function heroDisplayName() {
+  return state.guardianKaijuName || DEFAULT_GUARDIAN_NAME;
 }
 
 function escapeHtml(str) {
