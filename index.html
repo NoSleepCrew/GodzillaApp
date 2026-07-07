@@ -127,6 +127,26 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
   border-radius:10px;padding:10px 14px;cursor:pointer;
 }
 .parent-actions button.warn{border-color:var(--danger);color:#ffc4c8;background:rgba(255,92,106,.12)}
+.parent-gate{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.parent-gate h3{margin:0 0 8px;font-size:15px;color:var(--ink)}
+.code-row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.code-row input{
+  flex:1;min-width:160px;font-family:var(--font-body);font-weight:700;font-size:14px;
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  background:rgba(0,0,0,.25);color:var(--ink);
+}
+.parent-primary,.parent-lock{
+  font-family:var(--font-body);font-weight:800;font-size:13px;
+  border:1px solid var(--accent-dim);background:rgba(61,255,168,.15);
+  color:var(--accent);border-radius:10px;padding:10px 16px;cursor:pointer;
+}
+.parent-lock{margin-top:14px;border-color:var(--line);background:var(--panel);color:var(--ink)}
+.parent-msg{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:700}
+.parent-msg.error{color:#ffc4c8;background:rgba(255,92,106,.12);border:1px solid rgba(255,92,106,.35)}
+.parent-msg.ok{color:#a8f5d0;background:rgba(61,255,168,.1);border:1px solid rgba(61,255,168,.3)}
+.parent-note{color:var(--muted)}
+@media(max-width:640px){.code-row{flex-direction:column}}
+
 footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 @media(max-width:640px){
   nav button{font-size:13px; padding:7px 11px}
@@ -224,7 +244,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
     <div class="card">
       <h2>Reward Vault</h2>
       <p>Earned rewards and milestone prizes will be listed here after parent approval.</p>
-      <div class="placeholder-art">Reward checklist coming in Phase 3+</div>
+      <div class="placeholder-art">Reward checklist coming in a later phase</div>
       <p class="small">No money or payout system yet — missions currently update energy, boss HP, and city integrity only.</p>
     </div>
   </section>
@@ -242,26 +262,57 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
     </div>
   </section>
 
-  <section id="parent" class="screen">
+<section id="parent" class="screen">
     <div class="card">
-      <h2>Parent / Testing Controls</h2>
-      <p><span class="badge">Parent testing only</span> No parent code lock yet. These buttons reset local progress for testing.</p>
-      <div class="parent-actions">
-        <button type="button" onclick="resetTodayMissions()">Reset today&apos;s missions</button>
-        <button type="button" onclick="resetBossHp()">Reset boss HP</button>
-        <button type="button" class="warn" onclick="resetAllProgress()">Reset all progress</button>
+      <h2>Parent Command Center</h2>
+      <p class="small parent-note">Parent-only tools. Set a code so children cannot reset progress or use testing controls.</p>
+      <p class="small" id="parentCodeStatus">Parent code: checking...</p>
+
+      <div id="parentSetupBlock" class="parent-gate" hidden>
+        <h3>Create Parent Code</h3>
+        <p class="small">Choose a code parents will remember. Only a secure hash is stored on this device — never the raw code.</p>
+        <div class="code-row">
+          <input type="password" id="parentSetupCode" placeholder="New parent code" autocomplete="new-password" />
+          <input type="password" id="parentSetupConfirm" placeholder="Confirm code" autocomplete="new-password" />
+        </div>
+        <button type="button" class="parent-primary" onclick="submitParentSetup()">Save Parent Code</button>
       </div>
-      <p class="small" style="margin-top:14px">Future: parent code, award approval, backup/restore, and settings.</p>
+
+      <div id="parentUnlockBlock" class="parent-gate" hidden>
+        <h3>Unlock Parent Controls</h3>
+        <p class="small">Enter the parent code to access protected testing and reset tools.</p>
+        <div class="code-row">
+          <input type="password" id="parentUnlockCode" placeholder="Parent code" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitParentUnlock()" />
+          <button type="button" class="parent-primary" onclick="submitParentUnlock()">Unlock</button>
+        </div>
+      </div>
+
+      <p id="parentMsg" class="parent-msg" hidden></p>
+
+      <div id="parentControlsBlock" class="parent-gate" hidden>
+        <h3>Protected Controls</h3>
+        <p class="small">Unlocked for this browser session (about 5 minutes).</p>
+        <div class="parent-actions">
+          <button type="button" onclick="resetTodayMissions()">Reset daily missions</button>
+          <button type="button" onclick="clearMissionLog()">Clear mission log</button>
+          <button type="button" onclick="restoreBossHp()">Restore boss HP</button>
+          <button type="button" onclick="addTestEnergy()">Add test energy (+10)</button>
+          <button type="button" onclick="damageBossForTesting()">Damage boss (-20 HP)</button>
+          <button type="button" class="warn" onclick="resetAllProgress()">Reset all progress</button>
+        </div>
+        <button type="button" class="parent-lock" onclick="lockParentControls()">Lock Parent Controls</button>
+      </div>
     </div>
   </section>
+
 </main>
 
 <footer>Kaiju Quest: City Defender — local save only</footer>
 
 <script>
-/* Kaiju Quest: City Defender — Phase 2 core plumbing */
+/* Kaiju Quest: City Defender — Phase 3 parent controls */
 
-const APP_BUILD = "kq-phase2-core-v1";
+const APP_BUILD = "kq-phase3-parent-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
@@ -279,6 +330,123 @@ const STARTER_MISSIONS = [
   { id: "kindness", label: "Show kindness" },
   { id: "move", label: "Move your body" }
 ];
+
+const PARENT_UNLOCK_KEY = "kq_parent_unlocked_until";
+const PARENT_SESSION_MS = 5 * 60 * 1000;
+const TEST_ENERGY_BUMP = 10;
+const TEST_BOSS_DAMAGE = 20;
+
+async function hashParentCode(code) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function hasParentCode() {
+  return Boolean(settings.parentCodeHash);
+}
+
+function parentUnlocked() {
+  return Number(sessionStorage.getItem(PARENT_UNLOCK_KEY) || 0) > Date.now();
+}
+
+function unlockParentSession() {
+  sessionStorage.setItem(PARENT_UNLOCK_KEY, String(Date.now() + PARENT_SESSION_MS));
+}
+
+function lockParentSession() {
+  sessionStorage.removeItem(PARENT_UNLOCK_KEY);
+}
+
+function showParentMsg(text, isError) {
+  const el = document.getElementById("parentMsg");
+  if (!el) return;
+  if (!text) {
+    el.hidden = true;
+    el.textContent = "";
+    el.className = "parent-msg";
+    return;
+  }
+  el.hidden = false;
+  el.textContent = text;
+  el.className = "parent-msg " + (isError ? "error" : "ok");
+}
+
+async function verifyParentCode(entered) {
+  if (!entered || !hasParentCode()) return false;
+  return (await hashParentCode(entered)) === settings.parentCodeHash;
+}
+
+function requireParentUnlocked() {
+  if (!hasParentCode()) {
+    showParentMsg("Set a parent code first.", true);
+    return false;
+  }
+  if (!parentUnlocked()) {
+    showParentMsg("Parent controls are locked. Enter the parent code.", true);
+    return false;
+  }
+  return true;
+}
+
+async function submitParentSetup() {
+  const code = (document.getElementById("parentSetupCode") || {}).value || "";
+  const confirm = (document.getElementById("parentSetupConfirm") || {}).value || "";
+  if (code.length < 4) {
+    showParentMsg("Parent code must be at least 4 characters.", true);
+    return;
+  }
+  if (code !== confirm) {
+    showParentMsg("Codes do not match. Try again.", true);
+    return;
+  }
+  settings.parentCodeHash = await hashParentCode(code);
+  document.getElementById("parentSetupCode").value = "";
+  document.getElementById("parentSetupConfirm").value = "";
+  unlockParentSession();
+  save();
+  showParentMsg("Parent code saved. Controls unlocked.", false);
+  renderParentPanel();
+}
+
+async function submitParentUnlock() {
+  const entered = (document.getElementById("parentUnlockCode") || {}).value || "";
+  if (!entered) {
+    showParentMsg("Enter the parent code.", true);
+    return;
+  }
+  if (!(await verifyParentCode(entered))) {
+    showParentMsg("Wrong parent code. Try again.", true);
+    return;
+  }
+  document.getElementById("parentUnlockCode").value = "";
+  unlockParentSession();
+  showParentMsg("Unlocked for about 5 minutes.", false);
+  renderParentPanel();
+}
+
+function lockParentControls() {
+  lockParentSession();
+  showParentMsg("Parent controls locked.", false);
+  renderParentPanel();
+}
+
+function renderParentPanel() {
+  const hasCode = hasParentCode();
+  const unlocked = parentUnlocked();
+  const status = document.getElementById("parentCodeStatus");
+  const setup = document.getElementById("parentSetupBlock");
+  const unlock = document.getElementById("parentUnlockBlock");
+  const controls = document.getElementById("parentControlsBlock");
+
+  if (status) {
+    if (!hasCode) status.textContent = "Parent code: not set yet — create one below.";
+    else if (unlocked) status.textContent = "Parent code: set (controls unlocked).";
+    else status.textContent = "Parent code: set (locked).";
+  }
+  if (setup) setup.hidden = hasCode;
+  if (unlock) unlock.hidden = !hasCode || unlocked;
+  if (controls) controls.hidden = !unlocked;
+}
 
 function todayKey() {
   const d = new Date();
@@ -302,7 +470,7 @@ function defaultState() {
 }
 
 function defaultSettings() {
-  return { theme: "kaiju-dark", cloudEnabled: false };
+  return { theme: "kaiju-dark", cloudEnabled: false, parentCodeHash: "" };
 }
 
 function normalizeState(raw) {
@@ -352,11 +520,21 @@ function loadRawState() {
   }
 }
 
+function normalizeSettings(raw) {
+  const base = defaultSettings();
+  if (!raw || typeof raw !== "object") return base;
+  return {
+    ...base,
+    ...raw,
+    parentCodeHash: typeof raw.parentCodeHash === "string" ? raw.parentCodeHash : ""
+  };
+}
+
 function loadSettings() {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return defaultSettings();
-    return { ...defaultSettings(), ...JSON.parse(raw) };
+    return normalizeSettings(JSON.parse(raw));
   } catch (e) {
     return defaultSettings();
   }
@@ -400,22 +578,52 @@ function completeMission(missionId) {
 }
 
 function resetTodayMissions() {
-  if (!confirm("Reset today's mission checkmarks? (Parent/testing)")) return;
+  if (!requireParentUnlocked()) return;
+  if (!confirm("Reset today's mission checkmarks?")) return;
   state.missions.forEach((m) => { m.completedToday = false; });
   state.todayKey = todayKey();
   save();
+  showParentMsg("Daily missions reset.", false);
 }
 
-function resetBossHp() {
-  if (!confirm("Reset Storm Colossus to full HP? (Parent/testing)")) return;
+function clearMissionLog() {
+  if (!requireParentUnlocked()) return;
+  if (!confirm("Clear the mission log?")) return;
+  state.missionLog = [];
+  save();
+  showParentMsg("Mission log cleared.", false);
+}
+
+function restoreBossHp() {
+  if (!requireParentUnlocked()) return;
+  if (!confirm("Restore Storm Colossus to full HP?")) return;
   state.boss.currentHp = BOSS_MAX_HP;
   save();
+  showParentMsg("Boss HP restored.", false);
+}
+
+function addTestEnergy() {
+  if (!requireParentUnlocked()) return;
+  state.kaijuEnergy += TEST_ENERGY_BUMP;
+  recalcKaijuLevel(state);
+  save();
+  showParentMsg("Added " + TEST_ENERGY_BUMP + " test energy.", false);
+}
+
+function damageBossForTesting() {
+  if (!requireParentUnlocked()) return;
+  state.boss.currentHp = Math.max(0, state.boss.currentHp - TEST_BOSS_DAMAGE);
+  save();
+  showParentMsg("Boss damaged by " + TEST_BOSS_DAMAGE + " HP (testing).", false);
 }
 
 function resetAllProgress() {
-  if (!confirm("Reset ALL Kaiju Quest progress on this device? (Parent/testing)")) return;
+  if (!requireParentUnlocked()) return;
+  if (!confirm("Reset ALL Kaiju Quest progress on this device?")) return;
+  if (!confirm("This cannot be undone. Reset everything except the parent code?")) return;
   state = defaultState();
   save();
+  showParentMsg("All progress reset. Parent code kept.", false);
 }
 
 function formatLogTime(ts) {
@@ -500,6 +708,7 @@ function render() {
   renderMissionList();
   renderMissionLogs();
   renderCityStatus();
+  renderParentPanel();
 
   const syncEl = document.getElementById("syncStatus");
   if (syncEl) {
@@ -534,6 +743,7 @@ function showScreen(id) {
   const nav = document.getElementById("nav-" + id);
   if (screen) screen.classList.add("active");
   if (nav) nav.classList.add("active");
+  if (id === "parent") renderParentPanel();
 }
 
 /* Firebase inactive stub — new Kaiju Quest project later */
