@@ -1,0 +1,53 @@
+---
+description: Backup earned progress before changes; verify before push
+alwaysApply: true
+---
+
+# Kaiju Quest — Progress backup before changes
+
+Before editing `index.html` or any code that touches save, sync, render, or state:
+
+## 1. Backup first (required)
+
+Capture a **pre-change snapshot** and save it locally (never commit to git):
+
+- **Preferred (when Firebase is active):** export Kaiju Quest doc to `backups/pre-change-<YYYY-MM-DD>-<reason>.json`
+- **Phase 1 / local only:** copy `kq_rpg_state` and `kq_rpg_settings` from browser localStorage into `backups/pre-change-<YYYY-MM-DD>-<reason>.json`
+
+Write a short **Progress Summary** the user can confirm:
+
+| Field | What to record |
+|-------|----------------|
+| Defender | defenderName, defenderLevel |
+| Progress | energyPoints, cityIntegrity, missionsLogged |
+| Log | recent log entries (if any) |
+| Settings | theme, cloudEnabled |
+
+Filename example: `backups/pre-change-2026-07-06-phase2-missions.json`
+
+## 2. Make changes
+
+Keep diffs focused. If touching `save()`, Firebase sync, or `render()`, assume progress is at risk.
+
+## 3. Verify before asking to push (required)
+
+Do **not** ask about commit or push until verification is done:
+
+1. Syntax check passes (`python scripts/check-syntax.py`)
+2. Tab UI renders (Dashboard, Missions, Kaiju, City, Rewards, Rulebook, Parent)
+3. **Progress matches backup summary** — same counts, no wiped state
+4. Do not reuse Hero's Journey Firebase keys, collections, or `hj_*` localStorage keys
+
+Report to the user:
+
+```
+Pre-change backup: backups/<file>
+Summary: energy X, city integrity Y, … (key totals)
+Post-change verified: yes/no — <what was checked>
+Ready to push: only ask after verified: yes
+```
+
+## 4. Push policy
+
+- Never commit or push unless the user explicitly asks
+- When they do, remind them which backup file to restore from if live progress looks wrong

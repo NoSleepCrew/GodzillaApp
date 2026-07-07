@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kaiju Quest: City Defender</title>
+<meta name="description" content="Kaiju Quest: City Defender — defend the city, complete missions, earn rewards." />
+<meta name="application-name" content="Kaiju Quest" />
+<meta name="theme-color" content="#0a1210" />
+<meta name="apple-mobile-web-app-title" content="Kaiju Quest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#0a1210; --panel:#142420; --ink:#e8f4ef; --muted:#8fb5a8;
+  --accent:#3dffa8; --accent-dim:#1a8f5c; --warn:#ffb347; --danger:#ff5c6a;
+  --line:#2a4a40; --glow:rgba(61,255,168,.22);
+  --font-display:"Orbitron", "Segoe UI", sans-serif;
+  --font-body:"Nunito", "Segoe UI", sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:var(--font-body); font-weight:700; color:var(--ink);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(61,255,168,.12), transparent 28%),
+    radial-gradient(circle at 85% 18%, rgba(255,92,106,.1), transparent 24%),
+    linear-gradient(165deg,#060b0a,#0f1c18 55%,#060b0a);
+  min-height:100vh;
+}
+header{
+  text-align:center; padding:22px 16px 18px;
+  border-bottom:2px solid var(--accent-dim);
+  background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(20,36,32,.35));
+  box-shadow:0 8px 28px rgba(0,0,0,.35);
+}
+h1{
+  margin:0; font-family:var(--font-display); font-weight:800;
+  font-size:clamp(24px,4.8vw,48px); letter-spacing:.06em;
+  color:var(--accent); text-shadow:0 0 18px var(--glow);
+}
+.header-tagline{margin:8px 0 0; font-size:clamp(14px,2.2vw,18px); color:var(--muted)}
+.build-tag{margin:6px 0 0; font-size:12px; color:#5f8f7f; font-weight:600}
+nav{
+  display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  padding:12px 10px; position:sticky; top:0; z-index:10;
+  background:rgba(10,18,16,.92); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+nav button{
+  font-family:var(--font-body); font-weight:800; font-size:14px;
+  border:1px solid var(--line); background:var(--panel); color:var(--ink);
+  border-radius:999px; padding:8px 14px; cursor:pointer; transition:.2s;
+}
+nav button:hover{border-color:var(--accent-dim); transform:translateY(-1px)}
+nav button.active{
+  border-color:var(--accent); color:#04140e;
+  background:linear-gradient(180deg,#5dffc0,var(--accent));
+  box-shadow:0 0 16px var(--glow);
+}
+main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
+.screen{display:none}
+.screen.active{display:block}
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.18));
+  border:1px solid var(--line); border-radius:16px;
+  padding:18px 16px; margin:0 0 14px;
+  box-shadow:0 10px 28px rgba(0,0,0,.25);
+}
+.card h2{margin:0 0 10px; font-family:var(--font-display); font-size:20px; color:var(--accent)}
+.card p{margin:0 0 10px; line-height:1.5; color:var(--muted)}
+.card p:last-child{margin-bottom:0}
+.small{font-size:13px; font-weight:600}
+.stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:12px}
+.stat{
+  padding:12px; border-radius:12px; border:1px solid var(--line);
+  background:rgba(0,0,0,.2); text-align:center;
+}
+.stat .label{display:block; font-size:12px; color:var(--muted); margin-bottom:4px}
+.stat .value{font-family:var(--font-display); font-size:22px; color:var(--accent)}
+.placeholder-art{
+  height:140px; border-radius:14px; border:1px dashed var(--line);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--muted); font-size:14px; margin:12px 0;
+  background:rgba(0,0,0,.15);
+}
+.badge{
+  display:inline-block; padding:4px 10px; border-radius:999px;
+  font-size:12px; font-weight:800; border:1px solid var(--line);
+  background:rgba(255,179,71,.12); color:var(--warn);
+}
+footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
+@media(max-width:640px){
+  nav button{font-size:13px; padding:7px 11px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kaiju Quest: City Defender</h1>
+  <p class="header-tagline">Defend the skyline. Complete missions. Restore the city.</p>
+  <p class="build-tag" id="buildTag"></p>
+</header>
+
+<nav id="mainNav" aria-label="Main navigation">
+  <button type="button" onclick="showScreen('dashboard')" id="nav-dashboard" class="active">📊 Dashboard</button>
+  <button type="button" onclick="showScreen('missions')" id="nav-missions">📋 Missions</button>
+  <button type="button" onclick="showScreen('kaiju')" id="nav-kaiju">🦕 Kaiju</button>
+  <button type="button" onclick="showScreen('city')" id="nav-city">🏙️ City</button>
+  <button type="button" onclick="showScreen('rewards')" id="nav-rewards">🎁 Rewards</button>
+  <button type="button" onclick="showScreen('rulebook')" id="nav-rulebook">📖 Rulebook</button>
+  <button type="button" onclick="showScreen('parent')" id="nav-parent">⚙ Parent</button>
+</nav>
+
+<main>
+  <section id="dashboard" class="screen active">
+    <div class="card">
+      <h2>Command Center</h2>
+      <p>Welcome, <span id="defenderName">Defender</span>. This dashboard will track your progress across missions, city restoration, and rewards.</p>
+      <div class="stat-grid">
+        <div class="stat"><span class="label">Defender Level</span><span class="value" id="defenderLevel">1</span></div>
+        <div class="stat"><span class="label">Energy Points</span><span class="value" id="energyPoints">0</span></div>
+        <div class="stat"><span class="label">City Integrity</span><span class="value" id="cityIntegrity">100%</span></div>
+        <div class="stat"><span class="label">Missions Logged</span><span class="value" id="missionsLogged">0</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Status</h2>
+      <p><span class="badge">Phase 1 Shell</span> Game logic is not built yet. Progress is saved locally on this device.</p>
+      <p class="small" id="syncStatus">Cloud sync: inactive (local only)</p>
+    </div>
+  </section>
+
+  <section id="missions" class="screen">
+    <div class="card">
+      <h2>Mission Board</h2>
+      <p>Daily and weekly missions will appear here — chores, reading, cooperation, and other defender tasks.</p>
+      <div class="placeholder-art">Mission cards coming soon</div>
+      <p class="small">Mission tracking and parent approval flows will be added in a later phase.</p>
+    </div>
+  </section>
+
+  <section id="kaiju" class="screen">
+    <div class="card">
+      <h2>Kaiju Threat Monitor</h2>
+      <p>Track the colossal threat looming over the harbor district. Strike back by completing missions.</p>
+      <div class="placeholder-art">Kaiju encounter view coming soon</div>
+      <p class="small">Threat level, battle animations, and strike rewards are planned for a future update.</p>
+    </div>
+  </section>
+
+  <section id="city" class="screen">
+    <div class="card">
+      <h2>City Restoration</h2>
+      <p>As you complete missions, districts of the city will be restored — parks, transit, schools, and neighborhoods.</p>
+      <div class="placeholder-art">City map coming soon</div>
+      <p class="small">Restoration progress will tie into mission completion and long-term goals.</p>
+    </div>
+  </section>
+
+  <section id="rewards" class="screen">
+    <div class="card">
+      <h2>Reward Vault</h2>
+      <p>Earned rewards, screen-time credits, and milestone prizes will be listed here after parent approval.</p>
+      <div class="placeholder-art">Reward checklist coming soon</div>
+      <p class="small">Nothing can be claimed automatically — parents will approve payouts in the Parent area.</p>
+    </div>
+  </section>
+
+  <section id="rulebook" class="screen">
+    <div class="card">
+      <h2>Defender Rulebook</h2>
+      <p>The full agreement and quest rules will live here — how missions work, how rewards are earned, and what counts toward city restoration.</p>
+      <p class="small">Rulebook content will be written for your family’s Kaiju Quest campaign.</p>
+    </div>
+  </section>
+
+  <section id="parent" class="screen">
+    <div class="card">
+      <h2>Parent Command Center</h2>
+      <p><span class="badge">Placeholder</span> This area is reserved for parent-only controls.</p>
+      <p>Later versions will include:</p>
+      <ul class="small" style="color:var(--muted);line-height:1.6;padding-left:20px">
+        <li>Parent code lock for approving mission progress and rewards</li>
+        <li>Award checklist — review and approve earned rewards with your child</li>
+        <li>Backup and restore of local progress</li>
+        <li>Settings for mission types, reward amounts, and testing mode</li>
+        <li>Cloud sync status when Firebase is connected (separate Kaiju Quest project)</li>
+      </ul>
+      <p class="small">Parent controls are not active in Phase 1. All changes are local-only placeholders.</p>
+    </div>
+  </section>
+</main>
+
+<footer>Kaiju Quest: City Defender — local save only (Phase 1)</footer>
+
+<script>
+/* ── Kaiju Quest: City Defender — Phase 1 shell ── */
+
+const APP_BUILD = "kq-phase1-shell-v1";
+const STATE_KEY = "kq_rpg_state";
+const SETTINGS_KEY = "kq_rpg_settings";
+
+const defaultState = () => ({
+  defenderName: "Defender",
+  defenderLevel: 1,
+  energyPoints: 0,
+  cityIntegrity: 100,
+  missionsLogged: 0,
+  log: [],
+  lastModified: 0
+});
+
+const defaultSettings = () => ({
+  theme: "kaiju-dark",
+  cloudEnabled: false
+});
+
+let state = loadState();
+let settings = loadSettings();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return { ...defaultState(), ...parsed, log: Array.isArray(parsed.log) ? parsed.log : [] };
+  } catch (e) {
+    console.warn("kq: could not load state, using defaults", e);
+    return defaultState();
+  }
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return defaultSettings();
+    return { ...defaultSettings(), ...JSON.parse(raw) };
+  } catch (e) {
+    return defaultSettings();
+  }
+}
+
+function save() {
+  state.lastModified = Date.now();
+  localStorage.setItem(STATE_KEY, JSON.stringify(state));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  render();
+}
+
+function render() {
+  const buildEl = document.getElementById("buildTag");
+  if (buildEl) buildEl.textContent = "App build: " + APP_BUILD;
+
+  setText("defenderName", state.defenderName);
+  setText("defenderLevel", String(state.defenderLevel));
+  setText("energyPoints", String(state.energyPoints));
+  setText("cityIntegrity", state.cityIntegrity + "%");
+  setText("missionsLogged", String(state.missionsLogged));
+
+  const syncEl = document.getElementById("syncStatus");
+  if (syncEl) {
+    syncEl.textContent = settings.cloudEnabled
+      ? "Cloud sync: connecting…"
+      : "Cloud sync: inactive (local only)";
+  }
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
+  document.querySelectorAll("#mainNav button").forEach((btn) => btn.classList.remove("active"));
+  const screen = document.getElementById(id);
+  const nav = document.getElementById("nav-" + id);
+  if (screen) screen.classList.add("active");
+  if (nav) nav.classList.add("active");
+}
+
+/* ── Firebase (inactive stub — new project later) ──
+ * Do NOT reuse Hero's Journey Firebase config, keys, collections, or documents.
+ * When ready: create a new Firebase project, paste config below, set settings.cloudEnabled = true.
+ */
+const FIREBASE_STUB = {
+  active: false,
+  projectId: "kaiju-quest-placeholder",
+  note: "Replace with a new Kaiju Quest Firebase project before enabling sync."
+};
+
+const firebaseConfig = {
+  apiKey: "INACTIVE_STUB",
+  authDomain: "INACTIVE_STUB.firebaseapp.com",
+  projectId: "kaiju-quest-placeholder",
+  storageBucket: "INACTIVE_STUB.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "INACTIVE_STUB"
+};
+
+async function initFirebase() {
+  if (!FIREBASE_STUB.active || !settings.cloudEnabled) {
+    console.info("kq: Firebase inactive — localStorage only (" + FIREBASE_STUB.note + ")");
+    return;
+  }
+  // Future: load firebase compat scripts and sync to a NEW collection/document namespace.
+  // Example doc path (not wired): kaijuQuest / main
+}
+
+initFirebase();
+render();
+</script>
+</body>
+</html>

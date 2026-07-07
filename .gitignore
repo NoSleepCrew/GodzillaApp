@@ -1,0 +1,18 @@
+# Local progress snapshots — never commit earned points
+backups/*.json
+backups/*.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Playwright / test artifacts
+scripts/headless-dump.txt
+test-results/
