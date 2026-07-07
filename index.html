@@ -102,7 +102,7 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
   border:1px solid var(--accent-dim);background:rgba(61,255,168,.12);
   color:var(--accent);border-radius:999px;padding:8px 14px;cursor:pointer;
 }
-.mission-card button:disabled{opacity:.45;cursor:not-allowed}
+.mission-card button:disabled,.mission-card button.locked{opacity:.55;cursor:not-allowed}
 .log-list{margin:10px 0 0;padding:0;list-style:none}
 .log-list li{
   padding:10px 12px;border-radius:10px;border:1px solid var(--line);
@@ -146,6 +146,17 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .parent-msg.ok{color:#a8f5d0;background:rgba(61,255,168,.1);border:1px solid rgba(61,255,168,.3)}
 .parent-note{color:var(--muted)}
 @media(max-width:640px){.code-row{flex-direction:column}}
+.kid-feedback{
+  margin:12px 0 0;padding:12px 14px;border-radius:12px;
+  border:1px solid rgba(61,255,168,.4);background:rgba(61,255,168,.12);
+  color:#c8ffe8;font-weight:800;font-size:15px;text-align:center;
+}
+.mission-date-note{color:var(--muted);font-size:13px;font-weight:700;margin:0 0 10px}
+.mission-card button.locked{
+  border-color:var(--line);background:rgba(0,0,0,.2);color:var(--muted);cursor:not-allowed;
+}
+.log-detail{display:block;margin-top:4px;font-size:12px;color:var(--muted);font-weight:600}
+
 .stage-bar-wrap{margin:10px 0 4px}
 .stage-bar{height:14px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid var(--line);overflow:hidden}
 .stage-bar .fill{height:100%;background:linear-gradient(90deg,var(--accent-dim),var(--accent));transition:width .35s}
@@ -196,6 +207,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
     <div class="card">
       <h2>Command Center</h2>
       <p>Welcome, <span id="defenderName">Defender</span>. Track your kaiju power, weekly boss threat, and city status.</p>
+      <p id="kidFeedback" class="kid-feedback" hidden></p>
       <div id="victoryBanner" class="victory-banner" hidden></div>
       <div class="stat-grid">
         <div class="stat"><span class="label">Growth Stage</span><span class="value" id="kaijuStage" style="font-size:16px">Hatchling</span></div>
@@ -226,9 +238,11 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
   <section id="missions" class="screen">
     <div class="card">
       <h2>Mission Board</h2>
-      <p>Complete missions to gain kaiju energy, damage the weekly boss, and protect the city.</p>
+      <p class="mission-date-note" id="missionDateLabel">Today&apos;s missions</p>
+      <p id="kidFeedbackMissions" class="kid-feedback" hidden></p>
+      <p>Complete each mission once per day to power up your kaiju and protect the city.</p>
       <div class="mission-list" id="missionList"></div>
-      <p class="small">Each mission can be completed once per day. Values are simple for now and easy to tune later.</p>
+      <p class="small">Finished missions lock until tomorrow. Your energy, badges, and city progress stay saved.</p>
     </div>
     <div class="card">
       <h2>Full Mission Log</h2>
@@ -331,6 +345,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
         <p class="small">Unlocked for this browser session (about 5 minutes).</p>
         <div class="parent-actions">
           <button type="button" onclick="resetTodayMissions()">Reset daily missions</button>
+          <button type="button" onclick="clearKidFeedback()">Clear kid feedback message</button>
           <button type="button" onclick="clearMissionLog()">Clear mission log</button>
           <button type="button" onclick="restoreBossHp()">Restore boss HP</button>
           <button type="button" onclick="startNewBossBattle()">Start new Storm Colossus battle</button>
@@ -348,9 +363,9 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 <footer>Kaiju Quest: City Defender — local save only</footer>
 
 <script>
-/* Kaiju Quest: City Defender — Phase 4 progression */
+/* Kaiju Quest: City Defender — Phase 5 daily missions */
 
-const APP_BUILD = "kq-phase4-progress-v1";
+const APP_BUILD = "kq-phase5-missions-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
@@ -395,6 +410,7 @@ const MISSION_DISTRICT = {
 };
 
 const DISTRICT_GAIN_PER_MISSION = 8;
+const MISSION_LOG_MAX = 25;
 const BADGE_DEFS = [
   { id: "first_defender", name: "First Defender", icon: "🛡️", desc: "Complete your first mission." }
 ];
@@ -540,6 +556,7 @@ function defaultState() {
     missions: STARTER_MISSIONS.map((m) => ({ ...m, completedToday: false })),
     missionLog: [],
     todayKey: todayKey(),
+    kidFeedback: "",
     lastModified: 0
   };
 }
@@ -562,7 +579,11 @@ function normalizeState(raw) {
   merged.kaijuEnergy = Number(raw.kaijuEnergy != null ? raw.kaijuEnergy : raw.energyPoints || 0);
   merged.kaijuLevel = Number(raw.kaijuLevel != null ? raw.kaijuLevel : raw.defenderLevel || 1);
   merged.cityIntegrity = Math.max(0, Math.min(100, Number(raw.cityIntegrity != null ? raw.cityIntegrity : 100)));
-  merged.missionLog = Array.isArray(raw.missionLog) ? raw.missionLog : [];
+  merged.missionLog = (Array.isArray(raw.missionLog) ? raw.missionLog : [])
+    .map(normalizeLogEntry)
+    .filter(Boolean)
+    .slice(0, MISSION_LOG_MAX);
+  merged.kidFeedback = typeof raw.kidFeedback === "string" ? raw.kidFeedback : "";
   merged.badges = Array.isArray(raw.badges) ? raw.badges : [];
   merged.victoryLog = Array.isArray(raw.victoryLog) ? raw.victoryLog : [];
   merged.districts = defaultDistricts().map((def) => {
@@ -587,6 +608,63 @@ function normalizeState(raw) {
   recalcCityIntegrity(merged);
   recalcKaijuLevel(merged);
   return merged;
+}
+
+
+function districtNameForMission(missionId) {
+  const districtId = MISSION_DISTRICT[missionId];
+  const def = CITY_DISTRICT_DEFS.find((d) => d.id === districtId);
+  return def ? def.name : "the city";
+}
+
+function normalizeLogEntry(entry) {
+  if (!entry || typeof entry !== "object") return null;
+  const id = entry.id || "";
+  return {
+    id: id,
+    label: entry.label || "Mission",
+    at: entry.at || Date.now(),
+    dateKey: entry.dateKey || "",
+    energyGained: Number(entry.energyGained != null ? entry.energyGained : ENERGY_PER_MISSION),
+    bossDamage: Number(entry.bossDamage != null ? entry.bossDamage : BOSS_DAMAGE_PER_MISSION),
+    districtName: entry.districtName || districtNameForMission(id)
+  };
+}
+
+function formatLogEntryHtml(e) {
+  const when = formatLogTime(e.at);
+  const day = e.dateKey ? " · " + escapeHtml(e.dateKey) : "";
+  const detail = "+" + e.energyGained + " energy · -" + e.bossDamage + " boss HP · " + escapeHtml(e.districtName);
+  return '<li><b>' + escapeHtml(e.label) + '</b> — ' + escapeHtml(when) + day +
+    '<span class="log-detail">' + detail + '</span></li>';
+}
+
+function setKidFeedback(text) {
+  state.kidFeedback = text || "";
+}
+
+function buildKidFeedback(districtName) {
+  return districtName + " reinforced! Kaiju energy rising! The city is safer!";
+}
+
+function renderKidFeedback() {
+  const text = state.kidFeedback || "";
+  ["kidFeedback", "kidFeedbackMissions"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (text) {
+      el.hidden = false;
+      el.textContent = text;
+    } else {
+      el.hidden = true;
+      el.textContent = "";
+    }
+  });
+}
+
+function renderMissionDateLabel() {
+  const el = document.getElementById("missionDateLabel");
+  if (el) el.textContent = "Today’s missions — " + state.todayKey;
 }
 
 function recalcKaijuLevel(s) {
@@ -683,10 +761,11 @@ function awardBadge(id) {
 
 function applyDistrictGain(missionId) {
   const districtId = MISSION_DISTRICT[missionId];
-  if (!districtId) return;
+  if (!districtId) return districtNameForMission(missionId);
   const district = state.districts.find((d) => d.id === districtId);
-  if (!district) return;
+  if (!district) return districtNameForMission(missionId);
   district.protection = Math.min(100, district.protection + DISTRICT_GAIN_PER_MISSION);
+  return district.name;
 }
 
 function recalcCityIntegrity() {
@@ -728,17 +807,22 @@ function completeMission(missionId) {
   mission.completedToday = true;
   state.kaijuEnergy += ENERGY_PER_MISSION;
   state.boss.currentHp = Math.max(0, state.boss.currentHp - BOSS_DAMAGE_PER_MISSION);
-  state.missionLog.unshift({
+  const districtName = applyDistrictGain(missionId) || districtNameForMission(missionId);
+  recalcCityIntegrity();
+
+  state.missionLog.unshift(normalizeLogEntry({
     id: mission.id,
     label: mission.label,
     at: Date.now(),
-    dateKey: state.todayKey
-  });
-  if (state.missionLog.length > 50) state.missionLog.length = 50;
+    dateKey: state.todayKey,
+    energyGained: ENERGY_PER_MISSION,
+    bossDamage: BOSS_DAMAGE_PER_MISSION,
+    districtName: districtName
+  }));
+  if (state.missionLog.length > MISSION_LOG_MAX) state.missionLog.length = MISSION_LOG_MAX;
 
-  applyDistrictGain(missionId);
-  recalcCityIntegrity();
-  if (state.missionLog.length === 1) awardBadge("first_defender");
+  if (!hasBadge("first_defender")) awardBadge("first_defender");
+  setKidFeedback(buildKidFeedback(districtName));
   recalcKaijuLevel(state);
   handleBossDefeat();
   save();
@@ -751,6 +835,13 @@ function resetTodayMissions() {
   state.todayKey = todayKey();
   save();
   showParentMsg("Daily missions reset.", false);
+}
+
+function clearKidFeedback() {
+  if (!requireParentUnlocked()) return;
+  setKidFeedback("");
+  save();
+  showParentMsg("Kid feedback message cleared.", false);
 }
 
 function clearMissionLog() {
@@ -850,15 +941,10 @@ function renderMissionLogs() {
   const preview = document.getElementById("missionLogPreview");
   const full = document.getElementById("missionLogFull");
   const empty = document.getElementById("missionLogEmpty");
-  const entries = state.missionLog.slice(0, 10);
-  const html = entries.length
-    ? entries.map((e) => '<li><b>' + escapeHtml(e.label) + '</b> — ' + escapeHtml(formatLogTime(e.at)) + '</li>').join("")
-    : "";
-  if (preview) preview.innerHTML = html;
-  if (full) full.innerHTML = state.missionLog.map((e) =>
-    '<li><b>' + escapeHtml(e.label) + '</b> — ' + escapeHtml(formatLogTime(e.at)) + ' <span class="small">(' + escapeHtml(e.dateKey || "") + ')</span></li>'
-  ).join("");
-  if (empty) empty.style.display = entries.length ? "none" : "block";
+  const entries = state.missionLog.slice(0, 5);
+  if (preview) preview.innerHTML = entries.map(formatLogEntryHtml).join("");
+  if (full) full.innerHTML = state.missionLog.map(formatLogEntryHtml).join("");
+  if (empty) empty.style.display = state.missionLog.length ? "none" : "block";
 }
 
 
@@ -938,6 +1024,8 @@ function render() {
   setText("kaijuEnergyKaiju", String(state.kaijuEnergy));
   setText("cityIntegrityCity", state.cityIntegrity + "%");
 
+  renderMissionDateLabel();
+  renderKidFeedback();
   renderGrowthStage();
   renderBossHp();
   renderDistricts();
