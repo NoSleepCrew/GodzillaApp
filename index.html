@@ -174,16 +174,19 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .badge-card.earned{border-color:var(--accent-dim);box-shadow:0 0 12px var(--glow)}
 .badge-card.locked{opacity:.55}
 .badge-card .icon{font-size:28px;margin-bottom:6px}
-.title-grid,.discovery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
-.title-card,.discovery-card{
+.title-grid,.power-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+.title-card,.power-card{
   padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.18);
   text-align:left;cursor:default;
 }
 .title-card.unlocked{border-color:var(--accent-dim);cursor:pointer}
 .title-card.equipped{border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
-.title-card.locked,.discovery-card.locked{opacity:.55}
-.title-card .name,.discovery-card .name{font-weight:800;color:var(--ink);margin-bottom:4px}
+.title-card.locked,.power-card.locked{opacity:.55}
+.title-card .name,.power-card .name{font-weight:800;color:var(--ink);margin-bottom:4px}
 .equipped-title-line{margin:8px 0 0;font-size:14px;color:var(--accent);font-weight:800}
+.guardian-name-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 8px}
+.guardian-name-row label{font-size:13px;font-weight:700;color:var(--accent)}
+.guardian-name-row input{flex:1;min-width:160px;font-family:var(--font-body);font-weight:700;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:rgba(0,0,0,.25);color:var(--ink)}
 
 .reward-section{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
 
@@ -199,7 +202,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 
 <header>
   <h1>Kaiju Quest: City Defender</h1>
-  <p class="header-tagline">Defend the skyline. Complete missions. Restore the city.</p>
+  <p class="header-tagline">You are the Guardian Kaiju. Complete missions. Defeat rival kaiju. Protect the city.</p>
   <p class="build-tag" id="buildTag"></p>
 </header>
 
@@ -217,7 +220,12 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
   <section id="dashboard" class="screen active">
     <div class="card">
       <h2>Command Center</h2>
-      <p>Welcome, <span id="defenderName">Defender</span><span id="equippedTitleDash"></span>. Track your kaiju power, weekly boss threat, and city status.</p>
+      <p class="small">You are the heroic Guardian Kaiju. Real-life missions charge your attacks, strengthen city defenses, and damage rival kaiju.</p>
+      <div class="guardian-name-row">
+        <label for="guardianNameDash">Your Kaiju</label>
+        <input type="text" id="guardianNameDash" maxlength="28" placeholder="Guardian Kaiju" onchange="saveGuardianKaijuName(this.value)" onblur="saveGuardianKaijuName(this.value)" />
+      </div>
+      <p class="small">Battle title: <span id="equippedTitleDash">None</span></p>
       <p id="kidFeedback" class="kid-feedback" hidden></p>
       <div id="victoryBanner" class="victory-banner" hidden></div>
       <div class="stat-grid">
@@ -230,10 +238,10 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <div class="stage-bar-wrap"><div class="stage-bar"><div class="fill" id="stageProgressBar" style="width:0%"></div></div></div>
     </div>
     <div class="card">
-      <h2>Weekly Boss</h2>
+      <h2>Rival Kaiju Battle</h2>
       <p class="boss-bar-label"><span id="bossName">Storm Colossus</span><span id="bossHpText">100 / 100 HP</span></p>
       <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBar" style="width:100%"></div></div></div>
-      <p class="small" id="bossStatus">The colossus looms over the harbor district.</p>
+      <p class="small" id="bossStatus">Enemy kaiju Storm Colossus threatens the harbor district. Complete missions to strike back!</p>
     </div>
     <div class="card">
       <h2>Recent Mission Log</h2>
@@ -251,7 +259,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <h2>Mission Board</h2>
       <p class="mission-date-note" id="missionDateLabel">Today&apos;s missions</p>
       <p id="kidFeedbackMissions" class="kid-feedback" hidden></p>
-      <p>Complete each mission once per day to power up your kaiju and protect the city.</p>
+      <p>Complete each mission once per day to charge your Guardian Kaiju, strike rival kaiju, and shield the city.</p>
       <div class="mission-list" id="missionList"></div>
       <p class="small">Finished missions lock until tomorrow. Your energy, badges, and city progress stay saved.</p>
     </div>
@@ -263,8 +271,12 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 
   <section id="kaiju" class="screen">
     <div class="card">
-      <h2>Kaiju Threat Monitor</h2>
-      <p>Your kaiju energy grows as you complete missions. Energy also fuels strikes against the weekly boss.</p>
+      <h2>Your Guardian Kaiju</h2>
+      <p>Your Guardian Kaiju grows stronger as you complete missions. Energy fuels powerful strikes against enemy kaiju.</p>
+      <div class="guardian-name-row">
+        <label for="guardianNameKaiju">Kaiju name</label>
+        <input type="text" id="guardianNameKaiju" maxlength="28" placeholder="Guardian Kaiju" onchange="saveGuardianKaijuName(this.value)" onblur="saveGuardianKaijuName(this.value)" />
+      </div>
       <p class="equipped-title-line" id="equippedTitleKaiju" hidden></p>
       <div class="stat-grid">
         <div class="stat"><span class="label">Growth Stage</span><span class="value" id="kaijuStageKaiju" style="font-size:16px">Hatchling</span></div>
@@ -272,7 +284,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       </div>
       <p class="small" id="stageProgressLabelKaiju">Growing toward the next stage...</p>
       <div class="stage-bar-wrap"><div class="stage-bar"><div class="fill" id="stageProgressBarKaiju" style="width:0%"></div></div></div>
-      <div class="placeholder-art" id="kaijuArtLabel">Your kaiju grows stronger with every mission.</div>
+      <div class="placeholder-art" id="kaijuArtLabel">Your Guardian Kaiju grows stronger with every mission.</div>
       <p class="boss-bar-label"><span id="bossNameKaiju">Storm Colossus</span><span id="bossHpTextKaiju">100 / 100 HP</span></p>
       <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBarKaiju" style="width:100%"></div></div></div>
     </div>
@@ -293,7 +305,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
   <section id="rewards" class="screen">
     <div class="card">
       <h2>Reward Vault</h2>
-      <p>Badges, titles, and kaiju discoveries you earn on your quest. No money rewards yet — those come later with parent approval.</p>
+      <p>Battle achievements, titles, and kaiju powers you earn on your quest. No money rewards yet — those come later with parent approval.</p>
       <h3 class="small" style="color:var(--accent);margin-top:14px">Badges</h3>
       <div class="badge-grid" id="badgeGrid"></div>
       <div class="reward-section">
@@ -303,32 +315,33 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
         <div class="title-grid" id="titleVault"></div>
       </div>
       <div class="reward-section">
-        <h3 class="small" style="color:var(--muted)">Kaiju Discoveries</h3>
-        <p class="small">Rare creatures to find on future quests. Locked for now.</p>
-        <div class="discovery-grid" id="discoveryGrid"></div>
+        <h3 class="small" style="color:var(--accent)">Kaiju Powers</h3>
+        <p class="small">Battle abilities for your Guardian Kaiju. Locked for now — earn them on future quests.</p>
+        <div class="power-grid" id="powerGrid"></div>
       </div>
       <div class="reward-section">
         <h3 class="small" style="color:var(--accent)">Reward History</h3>
         <ul class="log-list" id="rewardLog"></ul>
         <p class="small" id="rewardLogEmpty">Badges and titles you earn will appear here.</p>
       </div>
-    </div>
-    <div class="card">
-      <h2>Boss Victory History</h2>
-      <ul class="log-list" id="victoryLog"></ul>
-      <p class="small" id="victoryLogEmpty">Defeat Storm Colossus to record a victory.</p>
+      <div class="reward-section">
+        <h3 class="small" style="color:var(--accent)">Battle Records</h3>
+        <p class="small">Enemy kaiju your Guardian Kaiju has defeated.</p>
+        <ul class="log-list" id="victoryLog"></ul>
+        <p class="small" id="victoryLogEmpty">Defeat Storm Colossus to record your first victory.</p>
+      </div>
     </div>
   </section>
 
   <section id="rulebook" class="screen">
     <div class="card">
-      <h2>Defender Rulebook</h2>
+      <h2>Guardian Rulebook</h2>
       <p>The full agreement and quest rules will live here. For now, the core loop is:</p>
       <ul class="small" style="color:var(--muted);line-height:1.6;padding-left:20px">
-        <li>Complete daily missions on the Mission Board</li>
-        <li>Gain kaiju energy and level up over time</li>
-        <li>Deal damage to the weekly boss, Storm Colossus</li>
-        <li>Raise or protect city integrity</li>
+        <li>Complete daily missions to power up your Guardian Kaiju</li>
+        <li>Gain kaiju energy and grow into stronger stages</li>
+        <li>Strike enemy kaiju like Storm Colossus in rival battles</li>
+        <li>Protect city districts from invading threats</li>
       </ul>
     </div>
   </section>
@@ -375,6 +388,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
           <button type="button" onclick="clearEarnedBadges()">Clear earned badges</button>
           <button type="button" onclick="unlockAllTitlesForTesting()">Unlock all titles (test)</button>
           <button type="button" onclick="resetEquippedTitle()">Reset selected title</button>
+          <button type="button" onclick="resetGuardianKaijuName()">Reset Guardian Kaiju name</button>
           <button type="button" class="warn" onclick="resetAllProgress()">Reset all progress</button>
         </div>
         <button type="button" class="parent-lock" onclick="lockParentControls()">Lock Parent Controls</button>
@@ -389,7 +403,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 <script>
 /* Kaiju Quest: City Defender — Phase 6 rewards */
 
-const APP_BUILD = "kq-phase6-rewards-v1";
+const APP_BUILD = "kq-phase6-rewards-v2";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
@@ -450,14 +464,15 @@ const TITLE_DEFS = [
   { id: "storm_tamer", name: "Storm Tamer", desc: "Defeat Storm Colossus once.", needsBossWin: true }
 ];
 
-const DISCOVERY_DEFS = [
-  { id: "emberback", name: "Emberback", desc: "A warm-scaled wanderer. Coming soon." },
-  { id: "tidehorn", name: "Tidehorn", desc: "A horned guardian of the deep harbor. Coming soon." },
-  { id: "skyclaw", name: "Skyclaw", desc: "A swift shadow above the skyline. Coming soon." },
-  { id: "stonehide", name: "Stonehide", desc: "A patient colossus of the old district. Coming soon." }
+const POWER_DEFS = [
+  { id: "thunder_roar", name: "Thunder Roar", desc: "A battle roar that shakes enemy kaiju. Unlock later." },
+  { id: "tailquake", name: "Tailquake", desc: "A ground-shaking tail strike. Unlock later." },
+  { id: "shield_stomp", name: "Shield Stomp", desc: "A defensive stomp that shields the city. Unlock later." },
+  { id: "skybreaker_charge", name: "Skybreaker Charge", desc: "A sky-charging rush at rival kaiju. Unlock later." }
 ];
 
 const REWARD_LOG_MAX = 30;
+const DEFAULT_GUARDIAN_NAME = "Guardian Kaiju";
 
 const PARENT_UNLOCK_KEY = "kq_parent_unlocked_until";
 const PARENT_SESSION_MS = 5 * 60 * 1000;
@@ -589,7 +604,7 @@ function defaultDistricts() {
 
 function defaultState() {
   return {
-    defenderName: "Defender",
+    guardianKaijuName: DEFAULT_GUARDIAN_NAME,
     kaijuLevel: 1,
     kaijuEnergy: 0,
     cityIntegrity: 100,
@@ -631,6 +646,14 @@ function normalizeState(raw) {
     .filter(Boolean)
     .slice(0, MISSION_LOG_MAX);
   merged.kidFeedback = typeof raw.kidFeedback === "string" ? raw.kidFeedback : "";
+  if (typeof raw.guardianKaijuName === "string" && raw.guardianKaijuName.trim()) {
+    merged.guardianKaijuName = raw.guardianKaijuName.trim().slice(0, 28);
+  } else if (typeof raw.defenderName === "string" && raw.defenderName.trim() && raw.defenderName !== "Defender") {
+    merged.guardianKaijuName = raw.defenderName.trim().slice(0, 28);
+  } else {
+    merged.guardianKaijuName = DEFAULT_GUARDIAN_NAME;
+  }
+  delete merged.defenderName;
   merged.badges = (Array.isArray(raw.badges) ? raw.badges : []).map((b) => {
     const def = BADGE_DEFS.find((d) => d.id === b.id);
     return {
@@ -702,7 +725,7 @@ function setKidFeedback(text) {
 }
 
 function buildKidFeedback(districtName) {
-  return districtName + " reinforced! Kaiju energy rising! The city is safer!";
+  return districtName + " defended! Your Guardian Kaiju charges up and strikes the rival kaiju!";
 }
 
 function renderKidFeedback() {
@@ -877,6 +900,27 @@ function resetEquippedTitle() {
   state.equippedTitleId = null;
   save();
   showParentMsg("Equipped title cleared.", false);
+}
+
+function saveGuardianKaijuName(name) {
+  const trimmed = (name || "").trim().slice(0, 28);
+  state.guardianKaijuName = trimmed || DEFAULT_GUARDIAN_NAME;
+  save();
+}
+
+function resetGuardianKaijuName() {
+  if (!requireParentUnlocked()) return;
+  state.guardianKaijuName = DEFAULT_GUARDIAN_NAME;
+  save();
+  showParentMsg("Guardian Kaiju name reset.", false);
+}
+
+function renderGuardianName() {
+  const name = state.guardianKaijuName || DEFAULT_GUARDIAN_NAME;
+  ["guardianNameDash", "guardianNameKaiju"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && document.activeElement !== el) el.value = name;
+  });
 }
 
 function unlockAllBadgesForTesting() {
@@ -1054,16 +1098,16 @@ function renderBossHp() {
 
   const status = document.getElementById("bossStatus");
   if (status) {
-    if (state.boss.defeated || state.boss.currentHp <= 0) status.textContent = "Victory! Storm Colossus has been driven back!";
-    else if (state.boss.currentHp <= 30) status.textContent = "The colossus is faltering. Keep up the pressure!";
-    else status.textContent = "The colossus looms over the harbor district.";
+    if (state.boss.defeated || state.boss.currentHp <= 0) status.textContent = "Victory! The enemy kaiju Storm Colossus has been driven back!";
+    else if (state.boss.currentHp <= 30) status.textContent = "The enemy kaiju is faltering. Keep striking!";
+    else status.textContent = "Enemy kaiju Storm Colossus threatens the harbor. Complete missions to attack!";
   }
 
   const banner = document.getElementById("victoryBanner");
   if (banner) {
     if (state.boss.defeated || state.boss.currentHp <= 0) {
       banner.hidden = false;
-      banner.textContent = "Victory! You defeated Storm Colossus! The harbor is safe — for now.";
+      banner.textContent = "Victory! Your Guardian Kaiju defeated the enemy kaiju Storm Colossus! The harbor is safe — for now.";
     } else {
       banner.hidden = true;
       banner.textContent = "";
@@ -1146,7 +1190,7 @@ function renderTitles() {
   const equippedLabel = equipped ? equipped.name : "None";
   if (display) display.textContent = equippedLabel;
   if (dash) {
-    dash.textContent = equipped ? " — " + equipped.name : "";
+    dash.textContent = equipped ? equipped.name : "None";
   }
   if (kaiju) {
     if (equipped) {
@@ -1169,13 +1213,13 @@ function renderTitles() {
   }).join("");
 }
 
-function renderDiscoveries() {
-  const grid = document.getElementById("discoveryGrid");
+function renderPowers() {
+  const grid = document.getElementById("powerGrid");
   if (!grid) return;
-  grid.innerHTML = DISCOVERY_DEFS.map((d) =>
-    '<div class="discovery-card locked">' +
-    '<div class="name">' + escapeHtml(d.name) + '</div>' +
-    '<div class="small">' + escapeHtml(d.desc) + '</div></div>'
+  grid.innerHTML = POWER_DEFS.map((pw) =>
+    '<div class="power-card locked">' +
+    '<div class="name">' + escapeHtml(pw.name) + '</div>' +
+    '<div class="small">' + escapeHtml(pw.desc) + '</div></div>'
   ).join("");
 }
 
@@ -1205,7 +1249,7 @@ function renderVictoryLog() {
   }
   if (empty) empty.style.display = "none";
   list.innerHTML = state.victoryLog.map((v) =>
-    '<li><b>' + escapeHtml(v.bossName) + '</b> defeated — ' + escapeHtml(formatLogTime(v.at)) + '</li>'
+    '<li><b>' + escapeHtml(v.bossName) + '</b> (enemy kaiju) defeated — ' + escapeHtml(formatLogTime(v.at)) + '</li>'
   ).join("");
 }
 
@@ -1223,7 +1267,7 @@ function render() {
   const buildEl = document.getElementById("buildTag");
   if (buildEl) buildEl.textContent = "App build: " + APP_BUILD;
 
-  setText("defenderName", state.defenderName);
+  renderGuardianName();
   setText("kaijuEnergy", String(state.kaijuEnergy));
   setText("cityIntegrity", state.cityIntegrity + "%");
   setText("missionsToday", String(missionsCompletedToday()));
@@ -1238,7 +1282,7 @@ function render() {
   renderDistricts();
   renderBadges();
   renderTitles();
-  renderDiscoveries();
+  renderPowers();
   renderRewardLog();
   renderVictoryLog();
   renderMissionList();
