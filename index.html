@@ -146,6 +146,25 @@ main{max-width:960px; margin:0 auto; padding:18px 14px 40px}
 .parent-msg.ok{color:#a8f5d0;background:rgba(61,255,168,.1);border:1px solid rgba(61,255,168,.3)}
 .parent-note{color:var(--muted)}
 @media(max-width:640px){.code-row{flex-direction:column}}
+.stage-bar-wrap{margin:10px 0 4px}
+.stage-bar{height:14px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid var(--line);overflow:hidden}
+.stage-bar .fill{height:100%;background:linear-gradient(90deg,var(--accent-dim),var(--accent));transition:width .35s}
+.district-grid{display:grid;gap:10px;margin-top:12px}
+.district-card{padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.18)}
+.district-card .name{font-weight:800;color:var(--ink);margin-bottom:6px}
+.district-card .pct{font-family:var(--font-display);font-size:18px;color:var(--accent)}
+.victory-banner{
+  margin:0 0 14px;padding:14px 16px;border-radius:14px;
+  border:1px solid rgba(61,255,168,.45);background:rgba(61,255,168,.12);
+  color:#c8ffe8;font-weight:800;text-align:center;
+}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:12px}
+.badge-card{padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.18);text-align:center}
+.badge-card.earned{border-color:var(--accent-dim);box-shadow:0 0 12px var(--glow)}
+.badge-card.locked{opacity:.55}
+.badge-card .icon{font-size:28px;margin-bottom:6px}
+.reward-section{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+
 
 footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 @media(max-width:640px){
@@ -177,12 +196,15 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
     <div class="card">
       <h2>Command Center</h2>
       <p>Welcome, <span id="defenderName">Defender</span>. Track your kaiju power, weekly boss threat, and city status.</p>
+      <div id="victoryBanner" class="victory-banner" hidden></div>
       <div class="stat-grid">
-        <div class="stat"><span class="label">Kaiju Level</span><span class="value" id="kaijuLevel">1</span></div>
+        <div class="stat"><span class="label">Growth Stage</span><span class="value" id="kaijuStage" style="font-size:16px">Hatchling</span></div>
         <div class="stat"><span class="label">Kaiju Energy</span><span class="value" id="kaijuEnergy">0</span></div>
         <div class="stat"><span class="label">City Integrity</span><span class="value" id="cityIntegrity">100%</span></div>
         <div class="stat"><span class="label">Missions Today</span><span class="value" id="missionsToday">0</span></div>
       </div>
+      <p class="small" id="stageProgressLabel">Next stage: Young Kaiju</p>
+      <div class="stage-bar-wrap"><div class="stage-bar"><div class="fill" id="stageProgressBar" style="width:0%"></div></div></div>
     </div>
     <div class="card">
       <h2>Weekly Boss</h2>
@@ -219,10 +241,12 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <h2>Kaiju Threat Monitor</h2>
       <p>Your kaiju energy grows as you complete missions. Energy also fuels strikes against the weekly boss.</p>
       <div class="stat-grid">
-        <div class="stat"><span class="label">Kaiju Level</span><span class="value" id="kaijuLevelKaiju">1</span></div>
+        <div class="stat"><span class="label">Growth Stage</span><span class="value" id="kaijuStageKaiju" style="font-size:16px">Hatchling</span></div>
         <div class="stat"><span class="label">Kaiju Energy</span><span class="value" id="kaijuEnergyKaiju">0</span></div>
       </div>
-      <div class="placeholder-art" id="kaijuArtLabel">Storm Colossus — threat active</div>
+      <p class="small" id="stageProgressLabelKaiju">Growing toward the next stage...</p>
+      <div class="stage-bar-wrap"><div class="stage-bar"><div class="fill" id="stageProgressBarKaiju" style="width:0%"></div></div></div>
+      <div class="placeholder-art" id="kaijuArtLabel">Your kaiju grows stronger with every mission.</div>
       <p class="boss-bar-label"><span id="bossNameKaiju">Storm Colossus</span><span id="bossHpTextKaiju">100 / 100 HP</span></p>
       <div class="boss-bar-wrap"><div class="boss-bar"><div class="fill" id="bossHpBarKaiju" style="width:100%"></div></div></div>
     </div>
@@ -235,7 +259,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
       <div class="stat-grid">
         <div class="stat"><span class="label">City Integrity</span><span class="value" id="cityIntegrityCity">100%</span></div>
       </div>
-      <div class="placeholder-art">District map coming in a later phase</div>
+      <div class="district-grid" id="districtGrid"></div>
       <p class="small" id="cityStatus">The city stands strong.</p>
     </div>
   </section>
@@ -243,9 +267,22 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
   <section id="rewards" class="screen">
     <div class="card">
       <h2>Reward Vault</h2>
-      <p>Earned rewards and milestone prizes will be listed here after parent approval.</p>
-      <div class="placeholder-art">Reward checklist coming in a later phase</div>
-      <p class="small">No money or payout system yet — missions currently update energy, boss HP, and city integrity only.</p>
+      <p>Badges, titles, and kaiju discoveries you earn on your quest. No money rewards yet — those come later with parent approval.</p>
+      <h3 class="small" style="color:var(--accent);margin-top:14px">Badges</h3>
+      <div class="badge-grid" id="badgeGrid"></div>
+      <div class="reward-section">
+        <h3 class="small" style="color:var(--muted)">Titles (coming soon)</h3>
+        <p class="small">Earn titles like Harbor Warden or Storm Watcher as you grow. Locked for now.</p>
+      </div>
+      <div class="reward-section">
+        <h3 class="small" style="color:var(--muted)">Kaiju Discoveries (coming soon)</h3>
+        <p class="small">Rare finds and lore entries will appear here as you progress.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Boss Victory History</h2>
+      <ul class="log-list" id="victoryLog"></ul>
+      <p class="small" id="victoryLogEmpty">Defeat Storm Colossus to record a victory.</p>
     </div>
   </section>
 
@@ -296,6 +333,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
           <button type="button" onclick="resetTodayMissions()">Reset daily missions</button>
           <button type="button" onclick="clearMissionLog()">Clear mission log</button>
           <button type="button" onclick="restoreBossHp()">Restore boss HP</button>
+          <button type="button" onclick="startNewBossBattle()">Start new Storm Colossus battle</button>
           <button type="button" onclick="addTestEnergy()">Add test energy (+10)</button>
           <button type="button" onclick="damageBossForTesting()">Damage boss (-20 HP)</button>
           <button type="button" class="warn" onclick="resetAllProgress()">Reset all progress</button>
@@ -310,9 +348,9 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 <footer>Kaiju Quest: City Defender — local save only</footer>
 
 <script>
-/* Kaiju Quest: City Defender — Phase 3 parent controls */
+/* Kaiju Quest: City Defender — Phase 4 progression */
 
-const APP_BUILD = "kq-phase3-parent-v1";
+const APP_BUILD = "kq-phase4-progress-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
@@ -329,6 +367,36 @@ const STARTER_MISSIONS = [
   { id: "school", label: "Practice school work" },
   { id: "kindness", label: "Show kindness" },
   { id: "move", label: "Move your body" }
+];
+
+
+const GROWTH_STAGES = [
+  { id: "hatchling", name: "Hatchling", minEnergy: 0 },
+  { id: "young", name: "Young Kaiju", minEnergy: 15 },
+  { id: "guardian", name: "City Guardian", minEnergy: 35 },
+  { id: "alpha", name: "Alpha Kaiju", minEnergy: 60 },
+  { id: "legendary", name: "Legendary Titan", minEnergy: 100 }
+];
+
+const CITY_DISTRICT_DEFS = [
+  { id: "shield", name: "Shield Tower" },
+  { id: "harbor", name: "Harbor Gate" },
+  { id: "skyrail", name: "Sky Rail" },
+  { id: "reactor", name: "Reactor Park" },
+  { id: "shelter", name: "Shelter Dome" }
+];
+
+const MISSION_DISTRICT = {
+  read: "shield",
+  chore: "reactor",
+  school: "skyrail",
+  kindness: "shelter",
+  move: "harbor"
+};
+
+const DISTRICT_GAIN_PER_MISSION = 8;
+const BADGE_DEFS = [
+  { id: "first_defender", name: "First Defender", icon: "🛡️", desc: "Complete your first mission." }
 ];
 
 const PARENT_UNLOCK_KEY = "kq_parent_unlocked_until";
@@ -455,13 +523,20 @@ function todayKey() {
   return d.getFullYear() + "-" + m + "-" + day;
 }
 
+function defaultDistricts() {
+  return CITY_DISTRICT_DEFS.map((d) => ({ id: d.id, name: d.name, protection: 100 }));
+}
+
 function defaultState() {
   return {
     defenderName: "Defender",
     kaijuLevel: 1,
     kaijuEnergy: 0,
     cityIntegrity: 100,
-    boss: { name: BOSS_NAME, maxHp: BOSS_MAX_HP, currentHp: BOSS_MAX_HP },
+    boss: { name: BOSS_NAME, maxHp: BOSS_MAX_HP, currentHp: BOSS_MAX_HP, defeated: false },
+    districts: defaultDistricts(),
+    badges: [],
+    victoryLog: [],
     missions: STARTER_MISSIONS.map((m) => ({ ...m, completedToday: false })),
     missionLog: [],
     todayKey: todayKey(),
@@ -481,17 +556,35 @@ function normalizeState(raw) {
   merged.boss = {
     name: BOSS_NAME,
     maxHp: BOSS_MAX_HP,
-    currentHp: Math.max(0, Math.min(BOSS_MAX_HP, Number(raw.boss && raw.boss.currentHp != null ? raw.boss.currentHp : BOSS_MAX_HP)))
+    currentHp: Math.max(0, Math.min(BOSS_MAX_HP, Number(raw.boss && raw.boss.currentHp != null ? raw.boss.currentHp : BOSS_MAX_HP))),
+    defeated: false
   };
   merged.kaijuEnergy = Number(raw.kaijuEnergy != null ? raw.kaijuEnergy : raw.energyPoints || 0);
   merged.kaijuLevel = Number(raw.kaijuLevel != null ? raw.kaijuLevel : raw.defenderLevel || 1);
   merged.cityIntegrity = Math.max(0, Math.min(100, Number(raw.cityIntegrity != null ? raw.cityIntegrity : 100)));
   merged.missionLog = Array.isArray(raw.missionLog) ? raw.missionLog : [];
+  merged.badges = Array.isArray(raw.badges) ? raw.badges : [];
+  merged.victoryLog = Array.isArray(raw.victoryLog) ? raw.victoryLog : [];
+  merged.districts = defaultDistricts().map((def) => {
+    const saved = Array.isArray(raw.districts) ? raw.districts.find((d) => d.id === def.id) : null;
+    return {
+      id: def.id,
+      name: def.name,
+      protection: Math.max(0, Math.min(100, Number(saved && saved.protection != null ? saved.protection : 0)))
+    };
+  });
+  merged.boss.defeated = Boolean(raw.boss && raw.boss.defeated) || merged.boss.currentHp <= 0;
+  if (merged.boss.currentHp <= 0) merged.boss.currentHp = 0;
   merged.todayKey = raw.todayKey || todayKey();
   merged.missions = STARTER_MISSIONS.map((starter) => {
     const saved = Array.isArray(raw.missions) ? raw.missions.find((m) => m.id === starter.id) : null;
     return { ...starter, completedToday: Boolean(saved && saved.completedToday) };
   });
+  const allDistrictsZero = merged.districts.every((d) => d.protection === 0);
+  if (allDistrictsZero && merged.cityIntegrity > 0) {
+    merged.districts.forEach((d) => { d.protection = merged.cityIntegrity; });
+  }
+  recalcCityIntegrity(merged);
   recalcKaijuLevel(merged);
   return merged;
 }
@@ -549,6 +642,80 @@ function save() {
   render();
 }
 
+
+function getGrowthStage(energy) {
+  let stage = GROWTH_STAGES[0];
+  for (const s of GROWTH_STAGES) {
+    if (energy >= s.minEnergy) stage = s;
+  }
+  return stage;
+}
+
+function getNextGrowthStage(energy) {
+  const current = getGrowthStage(energy);
+  const idx = GROWTH_STAGES.findIndex((s) => s.id === current.id);
+  return GROWTH_STAGES[idx + 1] || null;
+}
+
+function getStageProgress(energy) {
+  const current = getGrowthStage(energy);
+  const next = getNextGrowthStage(energy);
+  if (!next) return { pct: 100, label: "Legendary Titan reached!", remaining: 0 };
+  const span = next.minEnergy - current.minEnergy;
+  const done = energy - current.minEnergy;
+  return {
+    pct: Math.min(100, Math.round((done / span) * 100)),
+    label: "Next stage: " + next.name,
+    remaining: next.minEnergy - energy
+  };
+}
+
+function hasBadge(id) {
+  return state.badges.some((b) => b.id === id);
+}
+
+function awardBadge(id) {
+  if (hasBadge(id)) return;
+  const def = BADGE_DEFS.find((b) => b.id === id);
+  if (!def) return;
+  state.badges.push({ id: def.id, name: def.name, earnedAt: Date.now() });
+}
+
+function applyDistrictGain(missionId) {
+  const districtId = MISSION_DISTRICT[missionId];
+  if (!districtId) return;
+  const district = state.districts.find((d) => d.id === districtId);
+  if (!district) return;
+  district.protection = Math.min(100, district.protection + DISTRICT_GAIN_PER_MISSION);
+}
+
+function recalcCityIntegrity() {
+  if (!state.districts.length) return;
+  const avg = state.districts.reduce((sum, d) => sum + d.protection, 0) / state.districts.length;
+  state.cityIntegrity = Math.round(avg);
+}
+
+function handleBossDefeat() {
+  if (state.boss.defeated || state.boss.currentHp > 0) return;
+  state.boss.defeated = true;
+  state.boss.currentHp = 0;
+  state.victoryLog.unshift({
+    bossName: state.boss.name,
+    at: Date.now(),
+    dateKey: state.todayKey
+  });
+  if (state.victoryLog.length > 20) state.victoryLog.length = 20;
+}
+
+function startNewBossBattle() {
+  if (!requireParentUnlocked()) return;
+  if (!confirm("Start a new battle against Storm Colossus? HP resets to full.")) return;
+  state.boss.currentHp = BOSS_MAX_HP;
+  state.boss.defeated = false;
+  save();
+  showParentMsg("New Storm Colossus battle started.", false);
+}
+
 function missionsCompletedToday() {
   return state.missions.filter((m) => m.completedToday).length;
 }
@@ -561,10 +728,6 @@ function completeMission(missionId) {
   mission.completedToday = true;
   state.kaijuEnergy += ENERGY_PER_MISSION;
   state.boss.currentHp = Math.max(0, state.boss.currentHp - BOSS_DAMAGE_PER_MISSION);
-  if (state.cityIntegrity < 100) {
-    state.cityIntegrity = Math.min(100, state.cityIntegrity + CITY_REPAIR_PER_MISSION);
-  }
-
   state.missionLog.unshift({
     id: mission.id,
     label: mission.label,
@@ -573,7 +736,11 @@ function completeMission(missionId) {
   });
   if (state.missionLog.length > 50) state.missionLog.length = 50;
 
+  applyDistrictGain(missionId);
+  recalcCityIntegrity();
+  if (state.missionLog.length === 1) awardBadge("first_defender");
   recalcKaijuLevel(state);
+  handleBossDefeat();
   save();
 }
 
@@ -598,6 +765,7 @@ function restoreBossHp() {
   if (!requireParentUnlocked()) return;
   if (!confirm("Restore Storm Colossus to full HP?")) return;
   state.boss.currentHp = BOSS_MAX_HP;
+  state.boss.defeated = false;
   save();
   showParentMsg("Boss HP restored.", false);
 }
@@ -613,6 +781,7 @@ function addTestEnergy() {
 function damageBossForTesting() {
   if (!requireParentUnlocked()) return;
   state.boss.currentHp = Math.max(0, state.boss.currentHp - TEST_BOSS_DAMAGE);
+  handleBossDefeat();
   save();
   showParentMsg("Boss damaged by " + TEST_BOSS_DAMAGE + " HP (testing).", false);
 }
@@ -646,9 +815,20 @@ function renderBossHp() {
 
   const status = document.getElementById("bossStatus");
   if (status) {
-    if (state.boss.currentHp <= 0) status.textContent = "Storm Colossus has been driven back — for this week!";
+    if (state.boss.defeated || state.boss.currentHp <= 0) status.textContent = "Victory! Storm Colossus has been driven back!";
     else if (state.boss.currentHp <= 30) status.textContent = "The colossus is faltering. Keep up the pressure!";
     else status.textContent = "The colossus looms over the harbor district.";
+  }
+
+  const banner = document.getElementById("victoryBanner");
+  if (banner) {
+    if (state.boss.defeated || state.boss.currentHp <= 0) {
+      banner.hidden = false;
+      banner.textContent = "Victory! You defeated Storm Colossus! The harbor is safe — for now.";
+    } else {
+      banner.hidden = true;
+      banner.textContent = "";
+    }
   }
 }
 
@@ -681,12 +861,68 @@ function renderMissionLogs() {
   if (empty) empty.style.display = entries.length ? "none" : "block";
 }
 
+
+function renderGrowthStage() {
+  const stage = getGrowthStage(state.kaijuEnergy);
+  const prog = getStageProgress(state.kaijuEnergy);
+  setText("kaijuStage", stage.name);
+  setText("kaijuStageKaiju", stage.name);
+  setText("stageProgressLabel", prog.label + (prog.remaining > 0 ? " (" + prog.remaining + " energy to go)" : ""));
+  setText("stageProgressLabelKaiju", prog.label);
+  setStyleWidth("stageProgressBar", prog.pct + "%");
+  setStyleWidth("stageProgressBarKaiju", prog.pct + "%");
+}
+
+function renderDistricts() {
+  const grid = document.getElementById("districtGrid");
+  if (!grid) return;
+  grid.innerHTML = state.districts.map((d) => {
+    const pct = d.protection;
+    let status = "Needs repair";
+    if (pct >= 100) status = "Fully protected";
+    else if (pct >= 50) status = "Holding strong";
+    return '<div class="district-card"><div class="name">' + escapeHtml(d.name) + '</div>' +
+      '<div class="pct">' + pct + '%</div>' +
+      '<div class="small">' + status + '</div>' +
+      '<div class="stage-bar-wrap"><div class="stage-bar"><div class="fill" style="width:' + pct + '%"></div></div></div></div>';
+  }).join("");
+}
+
+function renderBadges() {
+  const grid = document.getElementById("badgeGrid");
+  if (!grid) return;
+  const all = BADGE_DEFS;
+  grid.innerHTML = all.map((def) => {
+    const earned = hasBadge(def.id);
+    return '<div class="badge-card ' + (earned ? "earned" : "locked") + '">' +
+      '<div class="icon">' + def.icon + '</div>' +
+      '<div class="title">' + escapeHtml(def.name) + '</div>' +
+      '<div class="small">' + escapeHtml(earned ? "Earned!" : def.desc) + '</div></div>';
+  }).join("");
+}
+
+function renderVictoryLog() {
+  const list = document.getElementById("victoryLog");
+  const empty = document.getElementById("victoryLogEmpty");
+  if (!list) return;
+  if (!state.victoryLog.length) {
+    list.innerHTML = "";
+    if (empty) empty.style.display = "block";
+    return;
+  }
+  if (empty) empty.style.display = "none";
+  list.innerHTML = state.victoryLog.map((v) =>
+    '<li><b>' + escapeHtml(v.bossName) + '</b> defeated — ' + escapeHtml(formatLogTime(v.at)) + '</li>'
+  ).join("");
+}
+
 function renderCityStatus() {
   const el = document.getElementById("cityStatus");
   if (!el) return;
-  if (state.cityIntegrity >= 100) el.textContent = "Districts are protected. Completing missions keeps the city safe.";
-  else if (state.cityIntegrity >= 60) el.textContent = "Some districts need repair — missions will help restore integrity.";
-  else el.textContent = "Storm damage is spreading. Complete missions to rebuild the city.";
+  const weak = state.districts.filter((d) => d.protection < 50).map((d) => d.name);
+  if (state.cityIntegrity >= 90) el.textContent = "All districts are well protected. Keep completing missions!";
+  else if (weak.length) el.textContent = "Missions repair districts. Weakest: " + weak.join(", ") + ".";
+  else el.textContent = "Districts are recovering. Each mission helps a specific building.";
 }
 
 function render() {
@@ -695,16 +931,18 @@ function render() {
   if (buildEl) buildEl.textContent = "App build: " + APP_BUILD;
 
   setText("defenderName", state.defenderName);
-  setText("kaijuLevel", String(state.kaijuLevel));
   setText("kaijuEnergy", String(state.kaijuEnergy));
   setText("cityIntegrity", state.cityIntegrity + "%");
   setText("missionsToday", String(missionsCompletedToday()));
 
-  setText("kaijuLevelKaiju", String(state.kaijuLevel));
   setText("kaijuEnergyKaiju", String(state.kaijuEnergy));
   setText("cityIntegrityCity", state.cityIntegrity + "%");
 
+  renderGrowthStage();
   renderBossHp();
+  renderDistricts();
+  renderBadges();
+  renderVictoryLog();
   renderMissionList();
   renderMissionLogs();
   renderCityStatus();
