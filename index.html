@@ -645,7 +645,7 @@ footer{text-align:center; padding:20px; color:#5f8f7f; font-size:12px}
 <script>
 /* Kaiju Quest: City Defender — Phase 8 kaiju assets */
 
-const APP_BUILD = "kq-phase8b-battle-aspect-v1";
+const APP_BUILD = "kq-phase8c-mobile-hero-v1";
 const STATE_KEY = "kq_rpg_state";
 const SETTINGS_KEY = "kq_rpg_settings";
 
@@ -660,7 +660,8 @@ const POWERED_IMAGE_MIN_ENERGY = 10;
 const PLAYER_CONFIG = {
   displayName: "Godzilla",
   mainImage: "assets/hero/godzilla-main.png",
-  poweredImage: "assets/hero/godzilla-atomic.png"
+  poweredImage: "assets/hero/godzilla-atomic.png",
+  mainImageAvailable: false
 };
 
 const ENEMY_KAIJU_DEFS = [
@@ -1577,13 +1578,17 @@ function renderMonsterImages() {
   const titleLabel = equipped ? equipped.name : "None";
   const defeated = state.boss.defeated || state.boss.currentHp <= 0;
 
-  const fillFighter = (id, src, cardClass) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = fighterAssetSlot(src, "tall", cardClass);
+  const heroOpts = {
+    eager: true,
+    fallbackSrc: PLAYER_CONFIG.poweredImage
   };
-  fillFighter("dashboardHeroPanel", playerImg, "hero-card");
-  fillFighter("dashboardBossPanel", enemyImg, "enemy-card");
-  fillFighter("kaijuHeroShowcase", playerImg, "hero-card");
+  const fillFighter = (id, src, cardClass, opts) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = fighterAssetSlot(src, "tall", cardClass, opts);
+  };
+  fillFighter("dashboardHeroPanel", playerImg, "hero-card", heroOpts);
+  fillFighter("dashboardBossPanel", enemyImg, "enemy-card", { eager: true });
+  fillFighter("kaijuHeroShowcase", playerImg, "hero-card", heroOpts);
   const thumb = (id) => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = imgSlot(enemyImg, bossName, "compact");
@@ -1742,14 +1747,27 @@ function setStyleWidth(id, value) {
   if (el) el.style.width = value;
 }
 
+function imgLoaded(img) {
+  if (img && img.parentElement) img.parentElement.classList.add("has-image");
+}
+
 function imgFallback(img) {
+  const fallback = img.dataset.fallbackSrc;
+  const tried = img.dataset.fallbackTried === "1";
+  if (fallback && !tried) {
+    img.dataset.fallbackTried = "1";
+    img.classList.remove("img-broken");
+    img.src = assetUrl(fallback);
+    img.dataset.assetPath = fallback;
+    return;
+  }
   img.classList.add("img-broken");
   const slot = img.closest(".img-slot");
   if (slot) {
     slot.classList.remove("has-image");
     const prompt = slot.querySelector(".img-placeholder");
     const path = img.dataset.assetPath || img.getAttribute("src") || "";
-    if (prompt) prompt.textContent = assetPrompt(path);
+    if (prompt) prompt.textContent = assetPrompt(path.split("?")[0]);
   }
 }
 
@@ -1804,7 +1822,14 @@ function normalizeBossState(rawBoss) {
 
 function getPlayerImagePath() {
   if (state.kaijuEnergy >= POWERED_IMAGE_MIN_ENERGY) return PLAYER_CONFIG.poweredImage;
-  return PLAYER_CONFIG.mainImage;
+  if (PLAYER_CONFIG.mainImageAvailable) return PLAYER_CONFIG.mainImage;
+  return PLAYER_CONFIG.poweredImage;
+}
+
+function assetUrl(path) {
+  if (!path) return "";
+  const sep = path.indexOf("?") >= 0 ? "&" : "?";
+  return path + sep + "v=" + encodeURIComponent(APP_BUILD);
 }
 
 function assetPrompt(path) {
@@ -1815,23 +1840,30 @@ function missionBattleDef(id) {
   return MISSION_BATTLE_DEFS[id] || { attack: "Power Blast", emoji: "⚡", effect: "Powers your kaiju!", verb: "ATTACK" };
 }
 
-function imgSlot(src, label, className) {
+function imgSlot(src, label, className, options) {
+  const opts = options || {};
   const cls = "img-slot " + (className || "compact");
   const path = src || "";
   const prompt = path ? assetPrompt(path) : "";
   const safePrompt = escapeHtml(prompt);
   const safeLabel = escapeHtml(label || "Kaiju");
+  const loadMode = opts.eager ? "eager" : "lazy";
+  const fallbackAttr = opts.fallbackSrc
+    ? (' data-fallback-src="' + escapeHtml(opts.fallbackSrc) + '"')
+    : "";
   let imgTag = "";
   if (path) {
-    const safeSrc = escapeHtml(path);
-    imgTag = '<img src="' + safeSrc + '" alt="' + safeLabel + '" data-asset-path="' + safeSrc + '" loading="lazy" onerror="imgFallback(this)" onload="this.parentElement.classList.add(\'has-image\')">';
+    const safeSrc = escapeHtml(assetUrl(path));
+    const safePath = escapeHtml(path);
+    imgTag = '<img src="' + safeSrc + '" alt="' + safeLabel + '" data-asset-path="' + safePath + '"' +
+      fallbackAttr + ' loading="' + loadMode + '" decoding="async" onerror="imgFallback(this)" onload="imgLoaded(this)">';
   }
   return '<div class="' + cls + '">' + imgTag +
     '<div class="img-placeholder asset-prompt">' + safePrompt + '</div></div>';
 }
 
-function fighterAssetSlot(src, className, cardClass) {
-  return '<div class="monster-card ' + cardClass + '">' + imgSlot(src, src, className || "tall") + '</div>';
+function fighterAssetSlot(src, className, cardClass, options) {
+  return '<div class="monster-card ' + cardClass + '">' + imgSlot(src, src, className || "tall", options) + '</div>';
 }
 
 function badgeImagePath(id) {
